@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/sh
 
-echo "Starting My Add-on..."
-python3 -m http.server 8080
+source venv/bin/activate
+echo "Starting Hasp Add-on..."
+python3 app/server/test.py
