@@ -1,0 +1,19 @@
+{
+    "name": "Solar Prediction",
+    "version": "0.0.1",
+    "slug": "solar_prediction",
+    "description": "Home Assistant add-on that predicts solar energy production.",
+    "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+    "startup": "application",
+    "boot": "auto",
+    "ports": {
+      "8080/tcp": 8080
+    },
+    "options": {
+      "option1": "default_value"
+    },
+    "schema": {
+      "option1": "str?"
+    }
+  }
+  
