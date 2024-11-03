@@ -5,8 +5,8 @@ FROM alpine:latest
 RUN apk add --no-cache python3 py3-pip
 
 # Copy files
-COPY run.sh /run.sh
-RUN chmod +x /run.sh
+COPY run.sh ./run.sh
+RUN chmod +x ./run.sh
 
 # Start the add-on
-CMD [ "/run.sh" ]
+CMD [ "./run.sh" ]
