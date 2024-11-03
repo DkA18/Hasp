@@ -6,14 +6,20 @@
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
     "startup": "application",
     "boot": "auto",
+    "ingress": true,
+    "ingress_port": 2802,   
+    "panel_title": "Solar Prediction",
+    "panel_icon": "mdi:flask", 
     "ports": {
       "5000/tcp": 5000
     },
     "options": {
-      "option1": "default_value"
+      "latitude": "10.0",
+      "longitude": "10.0"
     },
     "schema": {
-      "option1": "str?"
+      "latitude": "float?",
+      "longitude": "float?"
     }
   }
   
