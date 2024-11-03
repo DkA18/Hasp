@@ -1,13 +1,13 @@
 {
     "name": "Solar Prediction",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "slug": "solar_prediction",
     "description": "Home Assistant add-on that predicts solar energy production.",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
     "startup": "application",
     "boot": "auto",
     "ingress": true,
-    "ingress_port": 2802,   
+    "ingress_port": 5000,   
     "panel_title": "Solar Prediction",
     "panel_icon": "mdi:solar-power-variant-outline", 
     "ports": {
