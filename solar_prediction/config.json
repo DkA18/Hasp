@@ -9,7 +9,7 @@
     "ingress": true,
     "ingress_port": 2802,   
     "panel_title": "Solar Prediction",
-    "panel_icon": "mdi:flask", 
+    "panel_icon": "mdi:solar-power-variant-outline", 
     "ports": {
       "5000/tcp": 5000
     },

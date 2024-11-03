@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dracula">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Example with HTMX, Chart.js, TailwindCSS & DaisyUI</title>
+    <!-- Tailwind CSS and DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.7.0"></script>
+</head>
+<body class="bg-base-300 text-base-content">
+    <!-- Navbar -->
+    <nav class="navbar bg-base-100 rounded-2xl">
+        <div class="navbar-start">
+          <div class="dropdown">
+            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h8m-8 6h16" />
+              </svg>
+            </div>
+            <ul
+              tabindex="0"
+              class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+              <li><a>Item 1</a></li>
+              <li>
+                <a>Parent</a>
+                <ul class="p-2">
+                  <li><a>Submenu 1</a></li>
+                  <li><a>Submenu 2</a></li>
+                </ul>
+              </li>
+              <li><a>Item 3</a></li>
+            </ul>
+          </div>
+          <a class="btn btn-ghost text-xl">daisyUI</a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+          <ul class="menu menu-horizontal px-1">
+            <li><a>Item 1</a></li>
+            <li>
+              <details>
+                <summary>Parent</summary>
+                <ul class="p-2">
+                  <li><a>Submenu 1</a></li>
+                  <li><a>Submenu 2</a></li>
+                </ul>
+              </details>
+            </li>
+            <li><a>Item 3</a></li>
+          </ul>
+        </div>
+        <div class="navbar-end">
+          <a class="btn">Button</a>
+        </div>
+      </nav>
+
+    <!-- Main Content -->
+    <main class="p-6">
+        <div class="container mx-auto">
+            <h2 class="text-2xl font-semibold mb-4">Interactive Chart</h2>
+            <!-- Chart Container -->
+            <div class="bg-base-200 p-4 rounded-lg">
+                <canvas id="myChart" width="400" height="200"></canvas>
+            </div>
+            <!-- Button to Trigger HTMX Update -->
+            <div class="mt-4">
+                <button 
+                    class="btn btn-primary" 
+                    hx-get="/update-chart" 
+                    hx-target="#myChart" 
+                    hx-swap="outerHTML">
+                    Update Chart
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Chart.js Initialization -->
+    <script>
+        // Initial Chart.js setup
+        const ctx = document.getElementById('myChart').getContext('2d');
+        let myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                datasets: [{
+                    label: 'Sales',
+                    data: [12, 19, 3, 5, 2, 3, 7],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        color: '#fff'
+                    },
+                    x: {
+                        color: '#fff'
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff'
+                        }
+                    }
+                }
+            }
+        });
+
+        // HTMX Event Listener to update chart data
+        document.body.addEventListener("htmx:afterRequest", (event) => {
+            if (event.detail.path === "/update-chart") {
+                const newData = event.detail.xhr.response; // Get new data from response
+                updateChart(newData);
+            }
+        });
+
+        // Function to update the chart data
+        function updateChart(newData) {
+            myChart.data.datasets[0].data = newData;
+            myChart.update();
+        }
+    </script>
+</body>
+</html>

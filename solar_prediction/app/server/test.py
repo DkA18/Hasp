@@ -1,12 +1,12 @@
 # app.py
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request,render_template
 
 app = Flask(__name__)
 
 # Basic route
 @app.route('/')
 def home():
-    return jsonify({"message": "Hello, Home Assistant!"})
+    return render_template("index.html")
 
 # Additional route example
 @app.route('/status', methods=['GET'])
@@ -21,4 +21,4 @@ def data():
 
 if __name__ == '__main__':
     # Run the Flask app on all available network interfaces
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
