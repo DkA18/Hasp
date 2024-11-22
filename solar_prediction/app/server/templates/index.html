@@ -1,147 +1,290 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dracula">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chart Example with HTMX, Chart.js, TailwindCSS & DaisyUI</title>
-    <!-- Tailwind CSS and DaisyUI -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+{% extends 'base.html' %}
+{% block header %}
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{{url_for('static', filename='js/index.js')}}"></script>
+
+<style>
+  .dayContainer{
+    background-color: #1d232a; 
+
+  }
+  .flatpickr-days{
+    border: none;
+  }
+  .flatpickr-innerContainer{
+    border: none;
     
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.tailwindcss.com"></script>
+  } 
+  .flatpickr-rContainer{
+    border: none;
+    
+  } 
+  .flatpickr-day{
+color: #a6adbb;
+  }
+  .flatpickr-disabled{
+    color: #7394c960 !important;
+  }
+  .nextMonthDay{
+  color: #7394c960 !important;
+}
+</style>
+{% endblock %}
+{% block content %}
 
+{% include 'navbar.html' %}
+<!-- Main Content -->
+<div class="pt-20 container mx-auto px-4">
+  <h1 class="text-4xl font-semibold text-center mt-4 mb-4">Predictions</h1>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.7.0"></script>
-</head>
-<body class="bg-base-300 text-base-content">
-    <!-- Navbar -->
-    <nav class="navbar bg-base-100 rounded-2xl">
-        <div class="navbar-start">
-          <div class="dropdown">
-            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6h16M4 12h8m-8 6h16" />
-              </svg>
-            </div>
-            <ul
-              tabindex="0"
-              class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-              <li><a>Item 1</a></li>
-              <li>
-                <a>Parent</a>
-                <ul class="p-2">
-                  <li><a>Submenu 1</a></li>
-                  <li><a>Submenu 2</a></li>
-                </ul>
-              </li>
-              <li><a>Item 3</a></li>
-            </ul>
-          </div>
-          <a class="btn btn-ghost text-xl">daisyUI</a>
-        </div>
-        <div class="navbar-center hidden lg:flex">
-          <ul class="menu menu-horizontal px-1">
-            <li><a>Item 1</a></li>
-            <li>
-              <details>
-                <summary>Parent</summary>
-                <ul class="p-2">
-                  <li><a>Submenu 1</a></li>
-                  <li><a>Submenu 2</a></li>
-                </ul>
-              </details>
-            </li>
-            <li><a>Item 3</a></li>
-          </ul>
-        </div>
-        <div class="navbar-end">
-          <a class="btn">Button</a>
-        </div>
-      </nav>
+  <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 xl:grid-rows-1 gap-4 border-t border-gray-700 rounded px-2 w-full mx-0 mt-2">
+    <div class="container">
+      <h2 class="text-3xl font-semibold text-center mt-3 mb-2">Hourly</h2>
+      <div class="dropdown">
+        <div tabindex="0" role="button" class="btn m-1">Click</div>
+        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+          <li><a>Item 1</a></li>
+          <li><a>Item 2</a></li>
+        </ul>
+      </div>
+      <input type="text" id="date-range" class="input input-ghost w-full max-w-xs">
+      <div class="bg-base-200 rounded-lg shadow p-3 w-auto h-96">
+        <canvas id="salesChart" class="h-full"></canvas>
+      </div>
 
-    <!-- Main Content -->
-    <main class="p-6">
-        <div class="container mx-auto">
-            <h2 class="text-2xl font-semibold mb-4">Interactive Chart</h2>
-            <!-- Chart Container -->
-            <div class="bg-base-200 p-4 rounded-lg">
-                <canvas id="myChart" width="400" height="200"></canvas>
-            </div>
-            <!-- Button to Trigger HTMX Update -->
-            <div class="mt-4">
-                <button 
-                    class="btn btn-primary" 
-                    hx-get="/update-chart" 
-                    hx-target="#myChart" 
-                    hx-swap="outerHTML">
-                    Update Chart
-                </button>
-            </div>
-        </div>
-    </main>
+    </div>
+    <div class="container">
+      <h2 class="text-3xl font-semibold text-center mt-3 mb-2">Daily</h2>
 
-    <!-- Chart.js Initialization -->
-    <script>
-        // Initial Chart.js setup
-        const ctx = document.getElementById('myChart').getContext('2d');
-        let myChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-                datasets: [{
-                    label: 'Sales',
-                    data: [12, 19, 3, 5, 2, 3, 7],
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
+      <div class="dropdown">
+        <div tabindex="0" role="button" class="btn m-1">Click</div>
+        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+          <li><a>Item 1</a></li>
+          <li><a>Item 2</a></li>
+        </ul>
+      </div>
+      <div class="bg-base-200 rounded-lg shadow p-3 w-auto h-96">
+        <canvas id="salesChart2" class="h-full"></canvas>
+      </div>
+
+    </div>
+  </div>
+  <!-- Chart Container -->
+
+  <!-- Button to Update Chart Data via HTMX -->
+  <div class="flex justify-center mt-6">
+    <button hx-get="/update-chart-data" hx-target="#salesChartContainer" hx-swap="innerHTML" class="btn btn-primary">
+      Update Chart Data
+    </button>
+  </div>
+</div>
+
+<script>
+  flatpickr("#date-range", {
+    mode: "range",
+    dateFormat: "Y-m-d",
+    minDate: "{{min_date}}"
+  });
+
+</script>
+<script>
+  const ctx = document.getElementById('salesChart').getContext('2d');
+
+  // Create a vertical gradient for the line dataset
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, '#3B82F620');
+  gradient.addColorStop(1, '#3B82F600');
+
+  const gradient2 = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient2.addColorStop(0, '#EF444450');
+  gradient2.addColorStop(1, '#EF444400');
+
+  // Initialize the Chart.js instance
+  const comboChart = new Chart(ctx, {
+    type: 'bar', // Base type can be 'bar' or 'line'; here, we use 'bar' as base
+    data: {
+      labels: [],
+      datasets: [
+        // Line Dataset
+        // Bar Dataset
+        {
+          type: 'bar',
+          label: 'Units Sold',
+          data: [],
+          backgroundColor: gradient2, // Green bars
+          borderColor: '#B91C1C',
+          borderWidth: 1
+        },
+        {
+          type: 'line',
+          label: 'Revenue',
+          data: [],
+          fill: true,
+          backgroundColor: gradient,
+          borderColor: '#3B82F6',
+          borderWidth: 2,
+          tension: 0.4, // Smooth curve
+          pointBackgroundColor: '#3B82F6',
+          pointBorderColor: '#DBEAFE',
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+        },
+      },
+      scales: {
+        x: {
+          display: true,
+          offset: false,
+          title: {
+            display: true,
+            text: 'Month',
+            color: '#333',
+            font: {
+              size: 14,
+              weight: 'bold'
             },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        color: '#fff'
-                    },
-                    x: {
-                        color: '#fff'
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#fff'
-                        }
-                    }
-                }
-            }
-        });
+          },
+          grid: {
+            display: true,
+            color: 'rgba(255, 255, 255, 0.01)',
+          },
+        },
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          title: {
+            display: true,
+            text: 'Revenue ($)',
+            //color: '#4F46E5',
+            font: {
+              size: 14,
+              weight: 'bold'
+            },
+          },
+          ticks: {
+            beginAtZero: true,
+            //color: '#4F46E5',
+          },
+          grid: {
+            display: true,
+            color: 'rgba(255, 255, 255, 0.01)',
+          },
+        },
 
-        // HTMX Event Listener to update chart data
-        document.body.addEventListener("htmx:afterRequest", (event) => {
-            if (event.detail.path === "/update-chart") {
-                const newData = event.detail.xhr.response; // Get new data from response
-                updateChart(newData);
-            }
-        });
+      },
+    }
+  });
 
-        // Function to update the chart data
-        function updateChart(newData) {
-            myChart.data.datasets[0].data = newData;
-            myChart.update();
-        }
-    </script>
-</body>
-</html>
+  const ctx2 = document.getElementById('salesChart2').getContext('2d');
+
+  // Create a vertical gradient for the line dataset
+  const gradient3 = ctx2.createLinearGradient(0, 0, 0, 400);
+  gradient3.addColorStop(0, '#3B82F620');
+  gradient3.addColorStop(1, '#3B82F600');
+
+  const gradient4 = ctx2.createLinearGradient(0, 0, 0, 400);
+  gradient4.addColorStop(0, '#EF444450');
+  gradient4.addColorStop(1, '#EF444400');
+
+  // Initialize the Chart.js instance
+  const comboChart2 = new Chart(ctx2, {
+    type: 'bar', // Base type can be 'bar' or 'line'; here, we use 'bar' as base
+    data: {
+      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+      datasets: [
+        // Line Dataset
+        // Bar Dataset
+        {
+          type: 'bar',
+          label: 'Units Sold',
+          data: [45, 67, 60, 70, 46, 65, 55],
+          backgroundColor: gradient4, // Green bars
+          borderColor: '#B91C1C',
+          borderWidth: 1
+        },
+        {
+          type: 'line',
+          label: 'Revenue',
+          data: [65, 59, 80, 81, 56, 55, 40],
+          fill: true,
+          backgroundColor: gradient3,
+          borderColor: '#3B82F6',
+          borderWidth: 2,
+          tension: 0.4, // Smooth curve
+          pointBackgroundColor: '#3B82F6',
+          pointBorderColor: '#DBEAFE',
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+        },
+      },
+      scales: {
+        x: {
+          display: true,
+          offset: false,
+          title: {
+            display: true,
+            text: 'Month',
+            color: '#333',
+            font: {
+              size: 14,
+              weight: 'bold'
+            },
+          },
+          grid: {
+            display: true,
+            color: 'rgba(255, 255, 255, 0.01)',
+          },
+        },
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          title: {
+            display: true,
+            text: 'Revenue ($)',
+            //color: '#4F46E5',
+            font: {
+              size: 14,
+              weight: 'bold'
+            },
+          },
+          ticks: {
+            beginAtZero: true,
+            //color: '#4F46E5',
+          },
+          grid: {
+            display: true,
+            color: 'rgba(255, 255, 255, 0.01)',
+          },
+        },
+
+      },
+    }
+  });
+</script>
+
+{% include 'footer.html' %}
+{% endblock %}
