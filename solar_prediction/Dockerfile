@@ -5,11 +5,8 @@ FROM alpine:latest
 RUN apk add --no-cache python3 py3-pip
 
 # Copy files
-COPY run.sh /opt/run.sh
-RUN chmod a+x /opt/run.sh
 COPY app /opt/app
-WORKDIR /opt
+WORKDIR /opt/app
 RUN python3 -m venv venv
-RUN source venv/bin/activate && pip install -r app/requirements.txt
+RUN source venv/bin/activate && pip install -r requirements.txt
 EXPOSE 5000
-CMD [ "sh", "run.sh" ]

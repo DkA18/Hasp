@@ -23,20 +23,19 @@ class NeuralNetwork:
             
         return output
     
-    def load(self, file):
-        with open(file, "r") as f:
-            json_list: list = json.load(f)
-            for layer in json_list: 
-                
-                try:
-                    l = globals()[list(dict(layer).keys())[0]](*(list(dict(layer).values())[0]["shape"]))
-                    l.weights = np.asarray(list(dict(layer).values())[0]["weights"])
-                    l.bias = np.asarray(list(dict(layer).values())[0]["bias"])
-                except (KeyError, TypeError):
-                    l = globals()[list(dict(layer).keys())[0]]()
-                self.network.append(l) 
-                
-            print(self.network)
+    def load(self, json_record):
+        
+        json_list: list = json.loads(json_record)
+        for layer in json_list: 
+            
+            try:
+                l = globals()[list(dict(layer).keys())[0]](*(list(dict(layer).values())[0]["shape"]))
+                l.weights = np.asarray(list(dict(layer).values())[0]["weights"])
+                l.bias = np.asarray(list(dict(layer).values())[0]["bias"])
+            except (KeyError, TypeError):
+                l = globals()[list(dict(layer).keys())[0]]()
+            self.network.append(l) 
+
     
     def save(self):
         save_object = [n.json_dict() for n in self.network]
@@ -82,7 +81,7 @@ class NeuralNetwork:
                     if verbose:
                         print(f"Unit Validation epoch, actual={actual}, prediction={pred}, miss={np.abs(pred-actual).item()}, percentage={percent}%")
                 tested += 1
-                yield(f"Complete Validation on {e + 1}/{epochs} epoch, actual={np.mean([actual[1] for actual in current]).round()}, prediction={np.mean([pred[0] for pred in current]).round()}, miss={np.mean([np.abs(l[0]-l[1]).item() for l in current]).round()}, percentage={np.mean([percent[2] for percent in current]).round()}%, valid_error={valid_error}, error={error}")
+                print(f"Complete Validation on {e + 1}/{epochs} epoch, actual={np.mean([actual[1] for actual in current]).round()}, prediction={np.mean([pred[0] for pred in current]).round()}, miss={np.mean([np.abs(l[0]-l[1]).item() for l in current]).round()}, percentage={np.mean([percent[2] for percent in current]).round()}%, valid_error={valid_error}, error={error}", flush=True)
                 self.real_error.append(valid_error)
                 
                 if len(self.real_error) > 2:
@@ -91,10 +90,6 @@ class NeuralNetwork:
                 if len(self.real_error) > 5:
                     if self.real_error[-5] < np.mean(self.real_error[-4:]):
                         self.network = self.backup
-                        break
-        with app.app_context():
-            model = ModelJSON(data=self.save())    
-            db.session.add(model)
-            db.session.commit()
-            return redirect(url_for("views.home"))
+                        break   
+        return self.save()
                 

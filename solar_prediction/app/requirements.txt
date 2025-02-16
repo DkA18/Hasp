@@ -1,6 +1,8 @@
-Flask
+flask
 Flask-SQLAlchemy
 numpy
 requests
 pandas
 Flask-Migrate
+celery 
+redis

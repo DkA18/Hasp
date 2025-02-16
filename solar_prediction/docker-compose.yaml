@@ -1,0 +1,12 @@
+
+services:
+  solar_prediction:
+    build: .
+    container_name: solar_prediction_service
+    ports:
+      - "2802:5000"
+    volumes:
+      - ./app:/opt/app
+    entrypoint: run.sh
+    restart: always
+    working_dir: /opt/app

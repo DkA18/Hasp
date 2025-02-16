@@ -34,6 +34,8 @@ color: #a6adbb;
 {% block content %}
 
 {% include 'navbar.html' %}
+{% if model %}
+  
 <!-- Main Content -->
 <div class="pt-20 container mx-auto px-4">
   <h1 class="text-4xl font-semibold text-center mt-4 mb-4">Predictions</h1>
@@ -48,7 +50,7 @@ color: #a6adbb;
           <li><a>Item 2</a></li>
         </ul>
       </div>
-      <input type="text" id="date-range" class="input input-ghost w-full max-w-xs">
+      <!-- <input type="text" id="date-range" class="input input-ghost w-full max-w-xs"> -->
       <div class="bg-base-200 rounded-lg shadow p-3 w-auto h-96">
         <canvas id="salesChart" class="h-full"></canvas>
       </div>
@@ -64,6 +66,7 @@ color: #a6adbb;
           <li><a>Item 2</a></li>
         </ul>
       </div>
+      <input type="text" id="date-range" class="input input-ghost w-full max-w-xs">
       <div class="bg-base-200 rounded-lg shadow p-3 w-auto h-96">
         <canvas id="salesChart2" class="h-full"></canvas>
       </div>
@@ -104,14 +107,14 @@ color: #a6adbb;
   const comboChart = new Chart(ctx, {
     type: 'bar', // Base type can be 'bar' or 'line'; here, we use 'bar' as base
     data: {
-      labels: [],
+      labels: [1,2,3,4,5],
       datasets: [
         // Line Dataset
         // Bar Dataset
         {
           type: 'bar',
           label: 'Units Sold',
-          data: [],
+          data: JSON.parse("{{result}}"),
           backgroundColor: gradient2, // Green bars
           borderColor: '#B91C1C',
           borderWidth: 1
@@ -209,7 +212,7 @@ color: #a6adbb;
         {
           type: 'bar',
           label: 'Units Sold',
-          data: [45, 67, 60, 70, 46, 65, 55],
+          data: JSON.parse("{{result}}"),
           backgroundColor: gradient4, // Green bars
           borderColor: '#B91C1C',
           borderWidth: 1
@@ -285,6 +288,11 @@ color: #a6adbb;
     }
   });
 </script>
+{% else %}
+<div class="pt-20 flex items-center justify-center mx-auto px-4 h-screen">
+  <h1 class="text-center">no models</h1>
+  </div>
+{% endif %}
 
 {% include 'footer.html' %}
 {% endblock %}
