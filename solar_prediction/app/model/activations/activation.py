@@ -14,6 +14,7 @@ class Activation(Layer):
         return {self.__class__.__name__: ""}
 
     def forward(self, input):
+        
         self.input = input
         return self.activation(self.input)
 

@@ -1,3 +1,5 @@
+from copy import deepcopy
+from flask import json
 import requests
 import pandas as pd
 import numpy as np
@@ -11,7 +13,7 @@ import os
 
 
 def train():
-    solar = pd.read_csv(f'./app/server/data_daily.csv') # TEMP
+    solar = pd.read_csv(f'./data_daily.csv') # TEMP
     solar['time'] = pd.to_datetime(solar['time'], yearfirst=True, utc=True)
 
 
@@ -45,8 +47,10 @@ def train():
     network = [Dense(17,32), Softplus(), AdamDense(32, 64),  NormalizedTanh(),  AdamDense(64, 128),  Tanh(),  AdamDense(128, 1), Softplus()]
 
     n = NeuralNetwork(network)
-    print(X, flush=True)
-    return n.train(mse, mse_prime, X, y, epochs=2000, learning_rate=0.00001, verbose=False)
+    # print(X, flush=True)
+    trained_n = n.train(mse, mse_prime, X, y, epochs=2000, learning_rate=0.00001, verbose=False)
+    
+    return trained_n, json.dumps({"error": n.error_rate, "real_error": n.real_error})
 
 def predict(network, from_time, to_time):
     url = f"https://api.open-meteo.com/v1/forecast?latitude=49.7751150&longitude=13.3604831&start_date={from_time.strftime('%Y-%m-%d')}&end_date={to_time.strftime('%Y-%m-%d')}&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,daylight_duration,sunshine_duration,uv_index_max,uv_index_clear_sky_max,precipitation_sum,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum,et0_fao_evapotranspiration&timezone=GMT"
@@ -65,9 +69,8 @@ def predict(network, from_time, to_time):
     pred = pred/10000
     pred["month"] = (pred['month'] * 10000).apply(lambda x: abs(1 - abs(x - 6) / 5))
     X = pred.to_numpy()
-    
     X = np.expand_dims(X, axis=-1)
-    print(X, flush=True)
+    # print(X, flush=True)
     result = []
     for x in X:
         result.append(network.predict(x).item()* 10000)

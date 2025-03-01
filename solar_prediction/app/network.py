@@ -24,7 +24,10 @@ class NeuralNetwork:
         return output
     
     def load(self, json_record):
-        
+        self.network = []
+        self.error_rate = []
+        self.real_error = []
+        self.backup = None
         json_list: list = json.loads(json_record)
         for layer in json_list: 
             

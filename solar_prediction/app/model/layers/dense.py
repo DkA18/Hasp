@@ -15,6 +15,7 @@ class Dense(Layer):
         return {"Dense": {"weights": self.weights.tolist(), "bias": self.bias.tolist(), "shape": self.shape}}
 
     def forward(self, input):
+       
         self.input = input
         return np.dot(self.weights, self.input) + self.bias
 
@@ -40,6 +41,7 @@ class AdamDense(Layer):
         self.shape = [input_size, output_size]
         
     def forward(self, input):
+        
         self.input = input
         return np.dot(self.weights, self.input) + self.bias
 

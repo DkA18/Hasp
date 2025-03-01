@@ -84,14 +84,29 @@ color: #a6adbb;
 </div>
 
 <script>
-  flatpickr("#date-range", {
+  let fp = flatpickr("#date-range", {
     mode: "range",
     dateFormat: "Y-m-d",
     minDate: "{{min_date}}"
   });
 
-</script>
-<script>
+  fp.config.onChange.push(function(selectedDates, dateStr, instance) {
+    fetch("{{ url_for('api.index_daily_change_date', ) }}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ date_range: dateStr })
+    })
+    .then(response => response.json())
+    .then(data => {
+      comboChart2.data.datasets[0].data = data;
+      comboChart2.update();
+    })
+    .catch(error => console.error('Error:', error));
+  });
+
+
   const ctx = document.getElementById('salesChart').getContext('2d');
 
   // Create a vertical gradient for the line dataset
