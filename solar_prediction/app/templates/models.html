@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'navbar.html' %}
+<div class="container mx-auto p-4 mt-30">
+    <div class="bg-base-200 shadow-md rounded-lg p-6 mb-6 w-1/2">
+        <h2 class="text-2xl font-bold mb-4">Create New Model</h2>
+        <form action="{{ url_for('api.create_model') }}" method="post" class="flex w-full justify-between">
+            <div>
+                <label for="name" class="block text-sm font-medium text-base-content">Model Name</label>
+                <input type="text" name="name" id="name" class="input input-bordered w-full" required>
+            </div>
+            <div>
+                <label for="type" class="block text-sm font-medium text-base-content">Model Type</label>
+                <select name="type" id="type" class="select select-bordered w-full" required>
+                    <option value="daily">Daily</option>
+                    <option value="hourly">Hourly</option>
+                </select>
+            </div>
+            <div class="flex items-center">
+                <button type="submit" class="btn btn-primary">Create</button>
+            </div>
+        </form>
+    </div>
+    <div class="bg-base-100 shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-4">Models List</h2>
+        <ul class="space-y-2">
+            {% for model in models %}
+            <li class="p-4 bg-base-100 rounded-lg shadow-sm">
+                <h3 class="text-xl font-semibold">{{ model.name }}</h3>
+                <p class="text-gray-600">{{ model.type }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% include 'footer.html' %}
+{% endblock %}

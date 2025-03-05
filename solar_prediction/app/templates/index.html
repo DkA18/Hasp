@@ -1,313 +1,276 @@
 {% extends 'base.html' %}
 {% block header %}
-<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
+
+<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/flatpickr.css')}}">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="{{url_for('static', filename='js/index.js')}}"></script>
 
-<style>
-  .dayContainer{
-    background-color: #1d232a; 
 
-  }
-  .flatpickr-days{
-    border: none;
-  }
-  .flatpickr-innerContainer{
-    border: none;
+</head>
+
+<body class="bg-base-100">
+
+  {% include 'navbar.html'   %}
+
+  {% if exists %}
     
-  } 
-  .flatpickr-rContainer{
-    border: none;
-    
-  } 
-  .flatpickr-day{
-color: #a6adbb;
-  }
-  .flatpickr-disabled{
-    color: #7394c960 !important;
-  }
-  .nextMonthDay{
-  color: #7394c960 !important;
-}
-</style>
-{% endblock %}
-{% block content %}
+  <!-- Main Content -->
+  <div class="pt-20 container mx-auto px-4">
+    <h1 class="text-4xl font-semibold text-center mt-4 mb-4">Predictions</h1>
 
-{% include 'navbar.html' %}
-{% if model %}
-  
-<!-- Main Content -->
-<div class="pt-20 container mx-auto px-4">
-  <h1 class="text-4xl font-semibold text-center mt-4 mb-4">Predictions</h1>
-
-  <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 xl:grid-rows-1 gap-4 border-t border-gray-700 rounded px-2 w-full mx-0 mt-2">
-    <div class="container">
-      <h2 class="text-3xl font-semibold text-center mt-3 mb-2">Hourly</h2>
-      <div class="dropdown">
-        <div tabindex="0" role="button" class="btn m-1">Click</div>
-        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-          <li><a>Item 1</a></li>
-          <li><a>Item 2</a></li>
-        </ul>
+    <div
+      class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 xl:grid-rows-1 gap-4 border-t border-gray-700 rounded px-2 w-full mx-0 mt-2">
+      <div class="container">
+        <h2 class="text-3xl font-semibold text-center mt-3 mb-2">Hourly</h2>
+        <div class="dropdown">
+          <div tabindex="0" role="button" class="btn m-1">Click</div>
+          <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+            <li><a>Item 1</a></li>
+            <li><a>Item 2</a></li>
+          </ul>
+        </div>
+        <!-- <input type="text" id="date-range" class="input input-ghost w-full max-w-xs"> -->
+        <div class="bg-base-200 rounded-lg shadow p-3 w-auto h-96">
+          <canvas id="hourlyChart" class="h-full"></canvas>
+        </div>
       </div>
-      <!-- <input type="text" id="date-range" class="input input-ghost w-full max-w-xs"> -->
-      <div class="bg-base-200 rounded-lg shadow p-3 w-auto h-96">
-        <canvas id="salesChart" class="h-full"></canvas>
+      <div class="container">
+        <h2 class="text-3xl font-semibold text-center mt-3 mb-2">Daily</h2>
+        <div class="dropdown">
+          <div tabindex="0" role="button" class="btn m-1">BaseModel</div>
+          <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+            {%for model in models%}
+            <li><a>{{model}}</a></li>
+            {%endfor%}
+          </ul>
+        </div>
+        <input type="text" id="dateRangePicker" class="input w-full max-w-xs">
+        <div class="bg-base-200 rounded-lg shadow p-3 w-auto h-96">
+          <canvas id="dailyChart" class="h-full"></canvas>
+        </div>
       </div>
-
     </div>
-    <div class="container">
-      <h2 class="text-3xl font-semibold text-center mt-3 mb-2">Daily</h2>
 
-      <div class="dropdown">
-        <div tabindex="0" role="button" class="btn m-1">Click</div>
-        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
-          <li><a>Item 1</a></li>
-          <li><a>Item 2</a></li>
-        </ul>
-      </div>
-      <input type="text" id="date-range" class="input input-ghost w-full max-w-xs">
-      <div class="bg-base-200 rounded-lg shadow p-3 w-auto h-96">
-        <canvas id="salesChart2" class="h-full"></canvas>
-      </div>
-
+    <!-- Button to Update Chart Data via HTMX -->
+    <div class="flex justify-center mt-6">
+      <button hx-get="/update-chart-data" hx-target="#salesChartContainer" hx-swap="innerHTML" class="btn btn-primary">
+        Update Chart Data
+      </button>
     </div>
   </div>
-  <!-- Chart Container -->
 
-  <!-- Button to Update Chart Data via HTMX -->
-  <div class="flex justify-center mt-6">
-    <button hx-get="/update-chart-data" hx-target="#salesChartContainer" hx-swap="innerHTML" class="btn btn-primary">
-      Update Chart Data
-    </button>
+  <script>
+    // Initialize Flatpickr for date range selection
+    let dateRangePicker = flatpickr("#dateRangePicker", {
+      mode: "range",
+      dateFormat: "Y-m-d",
+      minDate: new Date().fp_incr(-30), // -1 month from today
+      maxDate: new Date().fp_incr(15),  // +15 days from today
+      defaultDate: [new Date(), new Date().fp_incr(4)], // today + 4 days
+      disableMobile: true, // disable mobile optimizations
+      cache: false // disable caching
+    });
+
+    // Event listener for date range change
+    dateRangePicker.config.onChange.push(function (selectedDates, dateStr, instance) {
+      fetch("{{url_for('api.index_daily_change_date')}}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ date_range: dateStr })
+      })
+        .then(response => response.json())
+        .then(data => {
+          dailyChart.data.datasets[0].data = data.predictions;
+          dailyChart.data.labels = data.labels;
+          dailyChart.update();
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    // Initialize Chart.js for hourly chart
+    const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+    const hourlyGradient = hourlyCtx.createLinearGradient(0, 0, 0, 400);
+    hourlyGradient.addColorStop(0, '#3B82F620');
+    hourlyGradient.addColorStop(1, '#3B82F600');
+
+    const hourlyGradient2 = hourlyCtx.createLinearGradient(0, 0, 0, 400);
+    hourlyGradient2.addColorStop(0, '#EF444450');
+    hourlyGradient2.addColorStop(1, '#EF444400');
+
+    const hourlyChart = new Chart(hourlyCtx, {
+      type: 'bar',
+      data: {
+        labels: [1, 2, 3, 4, 5],
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Units Sold',
+            data: JSON.parse("{{result}}"),
+            backgroundColor: hourlyGradient2,
+            borderColor: '#B91C1C',
+            borderWidth: 1
+          },
+          {
+            type: 'line',
+            label: 'Revenue',
+            data: [],
+            fill: true,
+            backgroundColor: hourlyGradient,
+            borderColor: '#3B82F6',
+            borderWidth: 2,
+            tension: 0.4,
+            pointBackgroundColor: '#3B82F6',
+            pointBorderColor: '#DBEAFE',
+          },
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+          },
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Month',
+              color: '#333',
+              font: {
+                size: 14,
+                weight: 'bold'
+              },
+            },
+            grid: {
+              display: true,
+              color: 'rgba(255, 255, 255, 0.01)',
+            },
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Revenue ($)',
+              font: {
+                size: 14,
+                weight: 'bold'
+              },
+            },
+            ticks: {
+              beginAtZero: true,
+            },
+            grid: {
+              display: true,
+              color: 'rgba(255, 255, 255, 0.01)',
+            },
+          },
+        },
+      }
+    });
+
+    // Initialize Chart.js for daily chart
+    const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+    const dailyGradient = dailyCtx.createLinearGradient(0, 0, 0, 400);
+    dailyGradient.addColorStop(0, '#3B82F620');
+    dailyGradient.addColorStop(1, '#3B82F600');
+
+    const dailyGradient2 = dailyCtx.createLinearGradient(0, 0, 0, 400);
+    dailyGradient2.addColorStop(0, '#EF444450');
+    dailyGradient2.addColorStop(1, '#EF444400');
+
+    const dailyChart = new Chart(dailyCtx, {
+      type: 'bar',
+      data: {
+        labels: JSON.parse('{{ labels | tojson | safe }}'),
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Predict Power (W)',
+            data: JSON.parse("{{result}}"),
+            backgroundColor: dailyGradient2,
+            borderColor: '#B91C1C',
+            borderWidth: 1
+          },
+          {
+            type: 'line',
+            label: 'Actual Power (W)',
+            data: [65, 59, 80, 81, 56, 55, 40],
+            fill: true,
+            backgroundColor: dailyGradient,
+            borderColor: '#3B82F6',
+            borderWidth: 2,
+            tension: 0.4,
+            pointBackgroundColor: '#3B82F6',
+            pointBorderColor: '#DBEAFE',
+          },
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+          },
+        },
+        scales: {
+          x: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Days',
+              color: '#333',
+              font: {
+                size: 14,
+                weight: 'bold'
+              },
+            },
+            grid: {
+              display: true,
+              color: 'rgba(255, 255, 255, 0.01)',
+            },
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: 'Power (W)',
+              font: {
+                size: 14,
+                weight: 'bold'
+              },
+            },
+            ticks: {
+              beginAtZero: true,
+            },
+            grid: {
+              display: true,
+              color: 'rgba(255, 255, 255, 0.01)',
+            },
+          },
+        },
+      }
+    });
+  </script>
+  {% else %}
+  <div class="text-center mt-100 w-100 h-100">
+
+    <h1>You dont have a model</h1>
   </div>
-</div>
-
-<script>
-  let fp = flatpickr("#date-range", {
-    mode: "range",
-    dateFormat: "Y-m-d",
-    minDate: "{{min_date}}"
-  });
-
-  fp.config.onChange.push(function(selectedDates, dateStr, instance) {
-    fetch("{{ url_for('api.index_daily_change_date', ) }}", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ date_range: dateStr })
-    })
-    .then(response => response.json())
-    .then(data => {
-      comboChart2.data.datasets[0].data = data;
-      comboChart2.update();
-    })
-    .catch(error => console.error('Error:', error));
-  });
+  {% endif %}
 
 
-  const ctx = document.getElementById('salesChart').getContext('2d');
-
-  // Create a vertical gradient for the line dataset
-  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-  gradient.addColorStop(0, '#3B82F620');
-  gradient.addColorStop(1, '#3B82F600');
-
-  const gradient2 = ctx.createLinearGradient(0, 0, 0, 400);
-  gradient2.addColorStop(0, '#EF444450');
-  gradient2.addColorStop(1, '#EF444400');
-
-  // Initialize the Chart.js instance
-  const comboChart = new Chart(ctx, {
-    type: 'bar', // Base type can be 'bar' or 'line'; here, we use 'bar' as base
-    data: {
-      labels: [1,2,3,4,5],
-      datasets: [
-        // Line Dataset
-        // Bar Dataset
-        {
-          type: 'bar',
-          label: 'Units Sold',
-          data: JSON.parse("{{result}}"),
-          backgroundColor: gradient2, // Green bars
-          borderColor: '#B91C1C',
-          borderWidth: 1
-        },
-        {
-          type: 'line',
-          label: 'Revenue',
-          data: [],
-          fill: true,
-          backgroundColor: gradient,
-          borderColor: '#3B82F6',
-          borderWidth: 2,
-          tension: 0.4, // Smooth curve
-          pointBackgroundColor: '#3B82F6',
-          pointBorderColor: '#DBEAFE',
-        },
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'top',
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-        },
-      },
-      scales: {
-        x: {
-          display: true,
-          offset: false,
-          title: {
-            display: true,
-            text: 'Month',
-            color: '#333',
-            font: {
-              size: 14,
-              weight: 'bold'
-            },
-          },
-          grid: {
-            display: true,
-            color: 'rgba(255, 255, 255, 0.01)',
-          },
-        },
-        y: {
-          type: 'linear',
-          display: true,
-          position: 'left',
-          title: {
-            display: true,
-            text: 'Revenue ($)',
-            //color: '#4F46E5',
-            font: {
-              size: 14,
-              weight: 'bold'
-            },
-          },
-          ticks: {
-            beginAtZero: true,
-            //color: '#4F46E5',
-          },
-          grid: {
-            display: true,
-            color: 'rgba(255, 255, 255, 0.01)',
-          },
-        },
-
-      },
-    }
-  });
-
-  const ctx2 = document.getElementById('salesChart2').getContext('2d');
-
-  // Create a vertical gradient for the line dataset
-  const gradient3 = ctx2.createLinearGradient(0, 0, 0, 400);
-  gradient3.addColorStop(0, '#3B82F620');
-  gradient3.addColorStop(1, '#3B82F600');
-
-  const gradient4 = ctx2.createLinearGradient(0, 0, 0, 400);
-  gradient4.addColorStop(0, '#EF444450');
-  gradient4.addColorStop(1, '#EF444400');
-
-  // Initialize the Chart.js instance
-  const comboChart2 = new Chart(ctx2, {
-    type: 'bar', // Base type can be 'bar' or 'line'; here, we use 'bar' as base
-    data: {
-      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-      datasets: [
-        // Line Dataset
-        // Bar Dataset
-        {
-          type: 'bar',
-          label: 'Units Sold',
-          data: JSON.parse("{{result}}"),
-          backgroundColor: gradient4, // Green bars
-          borderColor: '#B91C1C',
-          borderWidth: 1
-        },
-        {
-          type: 'line',
-          label: 'Revenue',
-          data: [65, 59, 80, 81, 56, 55, 40],
-          fill: true,
-          backgroundColor: gradient3,
-          borderColor: '#3B82F6',
-          borderWidth: 2,
-          tension: 0.4, // Smooth curve
-          pointBackgroundColor: '#3B82F6',
-          pointBorderColor: '#DBEAFE',
-        },
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'top',
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-        },
-      },
-      scales: {
-        x: {
-          display: true,
-          offset: false,
-          title: {
-            display: true,
-            text: 'Month',
-            color: '#333',
-            font: {
-              size: 14,
-              weight: 'bold'
-            },
-          },
-          grid: {
-            display: true,
-            color: 'rgba(255, 255, 255, 0.01)',
-          },
-        },
-        y: {
-          type: 'linear',
-          display: true,
-          position: 'left',
-          title: {
-            display: true,
-            text: 'Revenue ($)',
-            //color: '#4F46E5',
-            font: {
-              size: 14,
-              weight: 'bold'
-            },
-          },
-          ticks: {
-            beginAtZero: true,
-            //color: '#4F46E5',
-          },
-          grid: {
-            display: true,
-            color: 'rgba(255, 255, 255, 0.01)',
-          },
-        },
-
-      },
-    }
-  });
-</script>
-{% else %}
-<div class="pt-20 flex items-center justify-center mx-auto px-4 h-screen">
-  <h1 class="text-center">no models</h1>
-  </div>
-{% endif %}
-
-{% include 'footer.html' %}
-{% endblock %}
+  {% include 'footer.html' %}
+  {% endblock %}
