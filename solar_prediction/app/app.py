@@ -39,12 +39,7 @@ def create_app():
     with app.app_context():
         db.create_all()
     migrate = Migrate(app, db)  # Ensure Migrate is initialized with app and db
-    
-    @app.before_request
-    def fix_ingress_paths():
-        if "X-Ingress-Path" in request.headers:
-            ingress_path = request.headers["X-Ingress-Path"]
-            request.path = request.path.replace(ingress_path, "", 1)
+
 
     
     return app

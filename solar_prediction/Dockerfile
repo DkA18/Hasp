@@ -2,7 +2,7 @@
 FROM alpine:latest
 
 # Install dependencies
-RUN apk add --no-cache python3 py3-pip redis
+RUN apk add --no-cache python3 py3-pip redis nginx
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Copy files
 COPY ./app /opt/app
@@ -18,7 +18,7 @@ RUN chown -R appuser:appgroup /opt/app
 
 USER appuser
 RUN source /opt/venv/bin/activate && pip install -r requirements.txt
-EXPOSE 5000
+EXPOSE 8099
 
 RUN chmod a+x run.sh
 
