@@ -15,7 +15,7 @@ def favicon():
 
 @views.route("/")
 def default():
-    return redirect(url_for("views.base", page='index'))
+    return index()
 
 @views.route('/&page=<page>')
 def base(page: str):
