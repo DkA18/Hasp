@@ -14,10 +14,10 @@ def favicon():
     return redirect(url_for("static", filename="favicon.ico"))
 
 @views.route("/", defaults={"page": ""})
-@views.route('/&page=<page>')
+@views.route('/?page=<page>')
 def base(page:str):
     match page:
-        case 'index', '':
+        case '':
             return index()
         case 'settings':
             return settings()

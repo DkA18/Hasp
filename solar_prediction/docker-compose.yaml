@@ -8,6 +8,6 @@ services:
     volumes:
       - ./app:/opt/app
     user: appuser
-    entrypoint: ./run.sh
+    # entrypoint: ./run.sh
     restart: always
     working_dir: /opt/app
