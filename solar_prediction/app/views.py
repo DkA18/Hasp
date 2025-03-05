@@ -13,14 +13,11 @@ views = Blueprint("views", __name__)
 def favicon():
     return redirect(url_for("static", filename="favicon.ico"))
 
-@views.route("/")
-def default():
-    return index()
-
+@views.route("/", defaults={"page": ""})
 @views.route('/&page=<page>')
-def base(page: str):
+def base(page:str):
     match page:
-        case 'index':
+        case 'index', '':
             return index()
         case 'settings':
             return settings()
