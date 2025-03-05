@@ -20,6 +20,6 @@ USER appuser
 RUN source /opt/venv/bin/activate && pip install -r requirements.txt
 EXPOSE 5000
 
-RUN chmod a+x /run.sh
+RUN chmod a+x run.sh
 
 CMD [ "run.sh" ]
