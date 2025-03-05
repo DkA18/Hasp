@@ -5,5 +5,6 @@ echo "Starting Hasp Add-on..."
 python3 -m flask db init
 python3 -m flask db migrate
 python3 -m flask db upgrade
-nginx -g 'daemon off;' & redis-server & celery -A make_celery worker --loglevel=info & python3 app.py
+redis-server & celery -A make_celery worker --loglevel=info & python3 app.py &
+nginx -g 'daemon off;'
 
