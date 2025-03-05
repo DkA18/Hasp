@@ -19,3 +19,5 @@ RUN chown -R appuser:appgroup /opt/app
 USER appuser
 RUN source /opt/venv/bin/activate && pip install -r requirements.txt
 EXPOSE 5000
+
+CMD [ "run.sh" ]
