@@ -12,7 +12,8 @@ api = Blueprint('api', __name__)
 @api.route("/change_date", methods=["POST"])
 def index_daily_change_date():
     date_range = request.json.get("date_range")
-    if not date_range:
+    model_id = request.json.get("model_id")
+    if not date_range or not model_id:
         return abort(400)
     date_range = date_range.split(" to ") if "to" in date_range else [date_range, date_range]
     try:
@@ -21,13 +22,12 @@ def index_daily_change_date():
     except ValueError:
         return abort(400)
     
-    models = ModelJSON.query.all()
-    
-    model = models[0]
+    model = ModelJSON.query.get(model_id)
+    if not model:
+        return abort(404, description="Model not found")
         
     network = NeuralNetwork()
     network.load(model.data)
-    
     
     existing_predictions = PredictionValues.query.filter((db.func.date(PredictionValues.date) >= date_from.date()) & (db.func.date(PredictionValues.date) <= date_to.date())).all()
     if len(existing_predictions) == (date_to - date_from).days + 1:
@@ -38,11 +38,10 @@ def index_daily_change_date():
         cache_daily_predictions.delay(dict(zip([(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d")  for i in range(5)],predictions)),model.id  ) 
         current_app.logger.info("Using new predictions") 
    
-    
     date_labels = [(date_from + timedelta(days=i)).strftime("%B %d, %Y") for i in range((date_to - date_from).days + 1)]
-    
-    
-    return jsonify({"predictions": predictions, "labels": date_labels})
+    response = jsonify({"predictions": predictions, "labels": date_labels})
+    response.set_cookie("selected_model", model_id, max_age=30*24*60*60)
+    return response
 
 @api.route("/create_model", methods=["POST"])
 def create_model():
@@ -59,6 +58,6 @@ def create_model():
     task = train_model.delay(name, 1 if model_type == "daily" else 2)
     print(AsyncResult(task.task_id).state, flush=True)
     
-    return redirect(url_for("views.base"))
+    return redirect(url_for("views.base", page="index"))
 
 

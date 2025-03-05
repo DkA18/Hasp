@@ -9,10 +9,10 @@
 
 <body class="bg-base-100">
 
-  {% include 'navbar.html'   %}
+  {% include 'navbar.html' %}
 
   {% if exists %}
-    
+
   <!-- Main Content -->
   <div class="pt-20 container mx-auto px-4">
     <h1 class="text-4xl font-semibold text-center mt-4 mb-4">Predictions</h1>
@@ -35,11 +35,13 @@
       </div>
       <div class="container">
         <h2 class="text-3xl font-semibold text-center mt-3 mb-2">Daily</h2>
+
         <div class="dropdown">
-          <div tabindex="0" role="button" class="btn m-1">BaseModel</div>
+          <div tabindex="0" role="button" id="daily-model-dropdown" class="btn m-1"
+            data-model-id="{{selected_model.id}}">{{selected_model.name}}</div>
           <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
             {%for model in models%}
-            <li><a>{{model}}</a></li>
+            <li><a onclick="changeDailyModel('{{model.id}}', '{{model.name}}')">{{model.name}}</a></li>
             {%endfor%}
           </ul>
         </div>
@@ -59,6 +61,29 @@
   </div>
 
   <script>
+    // Function to change the daily model and update chart data
+    function changeDailyModel(modelId, modelName) {
+      const dateRange = document.getElementById('dateRangePicker').value;
+      let modelBtn = document.getElementById('daily-model-dropdown');
+
+
+      fetch("{{ url_for('api.index_daily_change_date') }}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ model_id: modelId, date_range: dateRange })
+      })
+        .then(response => response.json())
+        .then(data => {
+          dailyChart.data.datasets[0].data = data.predictions;
+          dailyChart.data.labels = data.labels;
+          dailyChart.update();
+          if (modelBtn.textContent !== modelName && modelName) { modelBtn.textContent = modelName; }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
     // Initialize Flatpickr for date range selection
     let dateRangePicker = flatpickr("#dateRangePicker", {
       mode: "range",
@@ -72,20 +97,7 @@
 
     // Event listener for date range change
     dateRangePicker.config.onChange.push(function (selectedDates, dateStr, instance) {
-      fetch("{{url_for('api.index_daily_change_date')}}", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ date_range: dateStr })
-      })
-        .then(response => response.json())
-        .then(data => {
-          dailyChart.data.datasets[0].data = data.predictions;
-          dailyChart.data.labels = data.labels;
-          dailyChart.update();
-        })
-        .catch(error => console.error('Error:', error));
+      changeDailyModel(document.getElementById('daily-model-dropdown').dataset.modelId);
     });
 
     // Initialize Chart.js for hourly chart
@@ -263,11 +275,16 @@
         },
       }
     });
+
+
   </script>
   {% else %}
-  <div class="text-center mt-100 w-100 h-100">
-
-    <h1>You dont have a model</h1>
+  <div class="fixed inset-0 flex items-center justify-center bg-base-100">
+    <div class="text-center">
+      <ion-icon name="alert-circle" class="text-6xl text-red-500 mb-4"></ion-icon>
+      <h1 class="text-2xl font-semibold mb-2">You don't have a model</h1>
+      <a href="{{ url_for('views.base', page='models') }}" class="btn btn-primary">Train Models</a>
+    </div>
   </div>
   {% endif %}
 

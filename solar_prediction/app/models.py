@@ -5,7 +5,7 @@ db = SQLAlchemy()
 class PredictionValues(db.Model):
     __tablename__ = 'prediction_values'
     id = db.Column(db.Integer, primary_key=True)  
-    date = db.Column(db.Date, nullable=False, index=True, unique=True) 
+    date = db.Column(db.Date, nullable=False, index=True) 
     value = db.Column(db.Float, nullable=False)
     model_id = db.Column(db.Integer, db.ForeignKey('model_json.id'), nullable=False)
     model = db.relationship('ModelJSON', backref=db.backref('predictions', lazy=True))
