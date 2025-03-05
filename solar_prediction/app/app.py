@@ -1,5 +1,6 @@
 # app.py
 import os
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from flask import Flask, jsonify, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -38,6 +39,13 @@ def create_app():
     with app.app_context():
         db.create_all()
     migrate = Migrate(app, db)  # Ensure Migrate is initialized with app and db
+    
+    @app.before_request
+    def ingress_rewrite():
+        if request.headers.get("X-Ingress-Path"):
+            app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {request.headers["X-Ingress-Path"]: app.wsgi_app})
+
+    
     return app
 
 if __name__ == '__main__':
