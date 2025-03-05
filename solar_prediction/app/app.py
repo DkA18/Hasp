@@ -41,9 +41,10 @@ def create_app():
     migrate = Migrate(app, db)  # Ensure Migrate is initialized with app and db
     
     @app.before_request
-    def ingress_rewrite():
-        if request.headers.get("X-Ingress-Path"):
-            app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {request.headers["X-Ingress-Path"]: app.wsgi_app})
+    def fix_ingress_paths():
+        if "X-Ingress-Path" in request.headers:
+            ingress_path = request.headers["X-Ingress-Path"]
+            request.path = request.path.replace(ingress_path, "", 1)
 
     
     return app
