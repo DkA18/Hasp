@@ -11,7 +11,7 @@ views = Blueprint("views", __name__)
 
 @views.route("/favicon.ico")
 def favicon():
-    return redirect(url_for("static", filename="favicon.ico"))
+    return redirect(url_for("static", filename="favicon.ico", _external=True))
 
 @views.route("/", defaults={"page": ""})
 @views.route('/?page=<page>')
