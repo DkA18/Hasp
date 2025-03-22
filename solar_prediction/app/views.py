@@ -1,11 +1,12 @@
 from copy import copy, deepcopy
 from datetime import datetime, timedelta
 import datetime as dt
-from flask import Blueprint, abort, redirect, render_template, request, url_for, jsonify, current_app
+from flask import Blueprint, abort, redirect, render_template, request, url_for, jsonify, current_app, g
 from models import *
 from daily import predict
 from network import NeuralNetwork
 from tasks import train_model, cache_daily_predictions
+from influx import InfluxDBClient
 
 views = Blueprint("views", __name__)
 
@@ -15,6 +16,7 @@ def favicon():
 
 @views.route('/')
 def index():
+    i = InfluxDBClient(g.ha_options["influx_host"], g.ha_options["influx_port"], g.ha_options["influx_user"], g.ha_options["influx_password"], g.ha_options["influx_db"])
     models = ModelJSON.query.all()
     if not models:
         return render_template("index.html", exists=False)

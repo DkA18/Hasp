@@ -1,7 +1,7 @@
 # app.py
 import os
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from flask import Flask, jsonify, request, render_template, url_for
+from flask import Flask, json, jsonify, request, render_template, url_for, g
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import pandas as pd
@@ -39,7 +39,13 @@ def create_app():
     with app.app_context():
         db.create_all()
     migrate = Migrate(app, db)  # Ensure Migrate is initialized with app and db
-
+    
+    try:
+        with open("/data/options.json") as f:
+            g.ha_options= json.load(f)
+    except FileNotFoundError:
+        g.ha_options = {}
+        
     def custom_url_for(endpoint, **values):
         ingress_path = request.headers.get("X-Ingress-Path", "")
         url = url_for(endpoint, **values)

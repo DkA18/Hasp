@@ -6,3 +6,4 @@ pandas
 Flask-Migrate
 celery 
 redis
+influxdb
