@@ -21,8 +21,7 @@
   },
   "options": {
     "latitude": "10.0",
-    "longitude": "10.0"
-    ,
+    "longitude": "10.0",
     "influx_user": "",
     "influx_password": ""
   },
@@ -30,6 +29,6 @@
     "latitude": "float?",
     "longitude": "float?",
     "influx_user": "str?",
-    "influx_password": "password?"
+    "influx_password": "str?"
   }
 }
