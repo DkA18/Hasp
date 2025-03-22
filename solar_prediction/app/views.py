@@ -21,7 +21,7 @@ def index():
     
     # Test query to fetch data from InfluxDB
     try:
-        test_query = """SELECT mean("value") AS "mean_value" FROM "homeassistant"."autogen"."MiB" WHERE "entity_id"='memory_free' FILL(null)"""
+        test_query = """SELECT mean("value") AS "mean_value" FROM "homeassistant"."autogen"."W" WHERE "entity_id"='pv_power' GROUP BY time(1d) FILL(null)"""
         test_result = i.query_data(test_query)
         current_app.logger.info(f"Test query result: {test_result}")
     except Exception as e:
