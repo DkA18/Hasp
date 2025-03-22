@@ -9,11 +9,9 @@ COPY ./app /opt/app
 WORKDIR /opt
 RUN python3 -m venv venv
 
-RUN chown -R appuser:appgroup /opt/venv
 
 WORKDIR /opt/app
 
-RUN chown -R appuser:appgroup /opt/app
 
 
 RUN chmod a+x run.sh 
