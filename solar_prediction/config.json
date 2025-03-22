@@ -1,6 +1,6 @@
 {
     "name": "Solar Prediction",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "slug": "solar_prediction",
     "description": "Home Assistant add-on that predicts solar energy production.",
     "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
@@ -19,7 +19,34 @@
     },
     "schema": {
       "latitude": "float?",
-      "longitude": "float?"
+      "longitude": "float?",
+      "influxdb": {
+      "type": "object",
+      "required": true,
+      "properties": {
+        "host": {
+        "type": "string",
+        "description": "InfluxDB host address"
+        },
+        "port": {
+        "type": "integer",
+        "description": "InfluxDB port number",
+        "default": 8086
+        },
+        "username": {
+        "type": "string",
+        "description": "InfluxDB username"
+        },
+        "password": {
+        "type": "string",
+        "description": "InfluxDB password"
+        },
+        "database": {
+        "type": "string",
+        "description": "InfluxDB database name"
+        }
+      }
+      }
     }
   }
   
