@@ -13,23 +13,7 @@ views = Blueprint("views", __name__)
 def favicon():
     return redirect(url_for("static", filename="favicon.ico", _external=True))
 
-@views.route("/", defaults={"page": ""})
-@views.route('/?page=<page>')
-def base(page:str):
-    match page:
-        case '':
-            return index()
-        case 'settings':
-            return settings()
-        case 'models':
-            return models()
-        case _:
-            return abort(404)
-
-def models():
-    return render_template("models.html", models=ModelJSON.query.all())
-    
-
+@views.route('/')
 def index():
     models = ModelJSON.query.all()
     if not models:
@@ -62,7 +46,11 @@ def index():
     
     return render_template("index.html", exists=True, result=predictions, labels=labels, models=models, selected_model=model)
 
-
+@views.route('/models')
+def models():
+    return render_template("models.html", models=ModelJSON.query.all())
+    
+@views.route('/settings')
 def settings():
     return render_template("settings.html")
 
