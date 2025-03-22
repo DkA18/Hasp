@@ -1,52 +1,35 @@
 {
-    "name": "Solar Prediction",
-    "version": "0.1.6",
-    "slug": "solar_prediction",
-    "description": "Home Assistant add-on that predicts solar energy production.",
-    "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
-    "startup": "application",
-    "boot": "auto",
-    "ingress": true,
-    "ingress_port": 8099,   
-    "panel_title": "Solar Prediction",
-    "panel_icon": "mdi:solar-power-variant-outline", 
-    "ports": {
-      "8099/tcp": 8099
-    },
-    "options": {
-      "latitude": "10.0",
-      "longitude": "10.0"
-    },
-    "schema": {
-      "latitude": "float?",
-      "longitude": "float?",
-      "influxdb": {
-      "type": "object",
-      "required": true,
-      "properties": {
-        "host": {
-        "type": "string",
-        "description": "InfluxDB host address"
-        },
-        "port": {
-        "type": "integer",
-        "description": "InfluxDB port number",
-        "default": 8086
-        },
-        "username": {
-        "type": "string",
-        "description": "InfluxDB username"
-        },
-        "password": {
-        "type": "string",
-        "description": "InfluxDB password"
-        },
-        "database": {
-        "type": "string",
-        "description": "InfluxDB database name"
-        }
-      }
-      }
-    }
+  "name": "Solar Prediction",
+  "version": "0.1.6",
+  "slug": "solar_prediction",
+  "description": "Home Assistant add-on that predicts solar energy production.",
+  "arch": [
+    "armhf",
+    "armv7",
+    "aarch64",
+    "amd64",
+    "i386"
+  ],
+  "startup": "application",
+  "boot": "auto",
+  "ingress": true,
+  "ingress_port": 8099,
+  "panel_title": "Solar Prediction",
+  "panel_icon": "mdi:solar-power-variant-outline",
+  "ports": {
+    "8099/tcp": 8099
+  },
+  "options": {
+    "latitude": "10.0",
+    "longitude": "10.0"
+    ,
+    "influx_user": "",
+    "influx_password": ""
+  },
+  "schema": {
+    "latitude": "float?",
+    "longitude": "float?",
+    "influx_user": "str?",
+    "influx_password": "password?"
   }
-  
+}
