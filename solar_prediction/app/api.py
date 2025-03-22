@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
-from flask import Blueprint, abort, redirect, request, jsonify, current_app, url_for
+from flask import Blueprint, abort, json, redirect, request, jsonify, current_app, url_for
+import pandas as pd
 from models import *
 from daily import predict
 from network import NeuralNetwork
+from influx import InfluxDBConnector
 from tasks import cache_daily_predictions, train_model
 from celery.result import AsyncResult
 
@@ -22,6 +24,17 @@ def index_daily_change_date():
     except ValueError:
         return abort(400)
     
+    with open("/data/options.json") as f:
+        ha_options= json.load(f)
+    i = InfluxDBConnector(ha_options["influx_host"], ha_options["influx_port"], ha_options["influx_user"], ha_options["influx_password"], ha_options["influx_db"])
+    i.connect()
+    try:
+        test_query = f"""SELECT max("value") AS "mean_value" FROM "homeassistant"."autogen"."kWh" WHERE time > {date_from} AND time < {date_to} AND "entity_id"='today_s_pv_generation' GROUP BY time(1d) FILL(0)"""
+        test_result = i.query_data(test_query)
+        solar = list(pd.DataFrame(test_result.raw["series"][0]["values"], columns=["time", "mean_value"])["mean_value"])
+    except Exception as e:
+        current_app.logger.error(f"Test query failed: {e}")
+    
     model = ModelJSON.query.get(model_id)
     if not model:
         return abort(404, description="Model not found")
@@ -39,7 +52,7 @@ def index_daily_change_date():
         current_app.logger.info("Using new predictions") 
    
     date_labels = [(date_from + timedelta(days=i)).strftime("%B %d, %Y") for i in range((date_to - date_from).days + 1)]
-    response = jsonify({"predictions": predictions, "labels": date_labels})
+    response = jsonify({"predictions": predictions, "labels": date_labels, "actual": solar})
     response.set_cookie("selected_model", model_id, max_age=30*24*60*60)
     return response
 
