@@ -58,6 +58,6 @@ def create_model():
     task = train_model.delay(name, 1 if model_type == "daily" else 2)
     print(AsyncResult(task.task_id).state, flush=True)
     
-    return redirect(url_for("views.base", page="index"))
+    return redirect(url_for("views.index"))
 
 

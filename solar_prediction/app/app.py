@@ -39,13 +39,6 @@ def create_app():
     with app.app_context():
         db.create_all()
     migrate = Migrate(app, db)  # Ensure Migrate is initialized with app and db
-    @app.before_request
-    def before_request():
-        try:
-            with open("/data/options.json") as f:
-                g.ha_options= json.load(f)
-        except FileNotFoundError:
-            g.ha_options = {}
         
     def custom_url_for(endpoint, **values):
         ingress_path = request.headers.get("X-Ingress-Path", "")

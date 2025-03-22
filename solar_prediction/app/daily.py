@@ -15,7 +15,9 @@ import os
 
 
 def train():
-    i = InfluxDBConnector(g.ha_options["influx_host"], g.ha_options["influx_port"], g.ha_options["influx_user"], g.ha_options["influx_password"], g.ha_options["influx_db"])
+    with open("/data/options.json") as f:
+        ha_options= json.load(f)
+    i = InfluxDBConnector(ha_options["influx_host"], ha_options["influx_port"], ha_options["influx_user"], ha_options["influx_password"], ha_options["influx_db"])
     i.connect()
     try:
         test_query = """SELECT mean("value") AS "mean_value" FROM "homeassistant"."autogen"."W" WHERE "entity_id"='pv_power' GROUP BY time(1d) FILL(null)"""
