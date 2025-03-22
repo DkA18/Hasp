@@ -18,6 +18,15 @@ def favicon():
 def index():
     i = InfluxDBConnector(g.ha_options["influx_host"], g.ha_options["influx_port"], g.ha_options["influx_user"], g.ha_options["influx_password"], g.ha_options["influx_db"])
     i.connect()
+    
+    # Test query to fetch data from InfluxDB
+    try:
+        test_query = """SELECT mean("value") AS "mean_value" FROM "homeassistant"."autogen"."MiB" WHERE "entity_id"='memory_free' FILL(null)"""
+        test_result = i.query_data(test_query)
+        current_app.logger.info(f"Test query result: {test_result}")
+    except Exception as e:
+        current_app.logger.error(f"Test query failed: {e}")
+    
     models = ModelJSON.query.all()
     if not models:
         return render_template("index.html", exists=False)
