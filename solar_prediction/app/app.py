@@ -1,7 +1,7 @@
 # app.py
 import os
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import pandas as pd
@@ -39,15 +39,16 @@ def create_app():
     with app.app_context():
         db.create_all()
     migrate = Migrate(app, db)  # Ensure Migrate is initialized with app and db
-    @app.before_request
-    def before_request():
-        app.logger.info(f"Request: {request.headers}")
-        if 'X-Ingress-Path' in request.headers:
-            ingress_path = request.headers['X-Ingress-Path']
-            if request.path.startswith(ingress_path):
-                request.environ['SCRIPT_NAME'] = ingress_path
-                request.path = request.path[len(ingress_path):]
 
+    def custom_url_for(endpoint, **values):
+        ingress_path = request.headers.get("X-Ingress-Path", "")
+        url = url_for(endpoint, **values)
+        if ingress_path and not url.startswith(ingress_path):
+            url = f"{ingress_path}{url}"
+
+        return url
+    
+    app.jinja_env.globals['url_for'] = custom_url_for
     
     return app
 
