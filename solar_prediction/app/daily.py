@@ -8,12 +8,21 @@ from model.layers.dense import Dense, AdamDense
 from model.activations.activation import Sigmoid, Tanh, ReLU, LReLU, NormalizedTanh, Softplus, Swish
 from model.losses import *
 import numpy as np
+from flask import current_app, g
+from influx import InfluxDBConnector
 
 import os
 
 
 def train():
-    solar = pd.read_csv(f'./data_daily.csv') # TEMP
+    i = InfluxDBConnector(g.ha_options["influx_host"], g.ha_options["influx_port"], g.ha_options["influx_user"], g.ha_options["influx_password"], g.ha_options["influx_db"])
+    i.connect()
+    try:
+        test_query = """SELECT mean("value") AS "mean_value" FROM "homeassistant"."autogen"."W" WHERE "entity_id"='pv_power' GROUP BY time(1d) FILL(null)"""
+        test_result = i.query_data(test_query)
+        solar = pd.DataFrame(test_result.raw["series"][0]["values"], columns=["time", "mean_value"])
+    except Exception as e:
+        current_app.logger.error(f"Test query failed: {e}")
     solar['time'] = pd.to_datetime(solar['time'], yearfirst=True, utc=True)
 
 
