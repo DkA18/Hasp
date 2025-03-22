@@ -1,6 +1,6 @@
 {
   "name": "Solar Prediction",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "slug": "solar_prediction",
   "description": "Home Assistant add-on that predicts solar energy production.",
   "arch": [
@@ -28,7 +28,7 @@
   "schema": {
     "latitude": "float?",
     "longitude": "float?",
-    "influx_user": "str?",
-    "influx_password": "str?"
+    "influx_user": "str",
+    "influx_password": "password"
   }
 }
