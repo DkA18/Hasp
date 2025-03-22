@@ -20,7 +20,7 @@ def train():
     i = InfluxDBConnector(ha_options["influx_host"], ha_options["influx_port"], ha_options["influx_user"], ha_options["influx_password"], ha_options["influx_db"])
     i.connect()
     try:
-        test_query = """SELECT mean("value") AS "mean_value" FROM "homeassistant"."autogen"."W" WHERE "entity_id"='pv_power' GROUP BY time(1d) FILL(null)"""
+        test_query = """SELECT max("value") AS "mean_value" FROM "homeassistant"."autogen"."kWh" WHERE "entity_id"='today_s_pv_generation' GROUP BY time(1d) FILL(0)"""
         test_result = i.query_data(test_query)
         solar = pd.DataFrame(test_result.raw["series"][0]["values"], columns=["time", "mean_value"])
     except Exception as e:
