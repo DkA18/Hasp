@@ -51,13 +51,7 @@ def index():
 @views.route('/models')
 def models():
     tasks = []
-    for task_id in train_model.AsyncResult.keys():
-        task = AsyncResult(task_id)
-        if task.name == "train_model" and task.status != "SUCCESS":
-            tasks.append({
-                "id": task.id,
-                "status": task.status
-            })
+    
 
     return render_template("models.html", models=ModelJSON.query.all(), tasks=tasks)
     
