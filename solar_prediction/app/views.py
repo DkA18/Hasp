@@ -6,7 +6,6 @@ from models import *
 from daily import predict
 from network import NeuralNetwork
 from tasks import train_model, cache_daily_predictions
-from influx import InfluxDBConnector
 
 views = Blueprint("views", __name__)
 
