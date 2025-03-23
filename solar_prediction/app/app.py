@@ -16,12 +16,12 @@ celery = None
 def create_app():
     global celery
     app = Flask(__name__)
-    if not os.path.exists(os.path.join(app.instance_path, 'instance')):
+    if not os.path.exists("/data/instance"):
         try:
-            os.makedirs(app.instance_path)
+            os.makedirs("/data/instance")
         except OSError:
             pass
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath('./instance/db.sqlite')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/instance/db.sqlite'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
     app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
