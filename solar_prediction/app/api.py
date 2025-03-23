@@ -4,7 +4,7 @@ import pandas as pd
 from models import *
 from daily import predict
 from network import NeuralNetwork
-from influx import InfluxDBConnector
+from influx import get_influx_data
 from tasks import cache_daily_predictions, train_model
 from celery.result import AsyncResult
 
@@ -24,16 +24,8 @@ def index_daily_change_date():
     except ValueError:
         return abort(400)
     
-    with open("/data/options.json") as f:
-        ha_options= json.load(f)
-    i = InfluxDBConnector(ha_options["influx_host"], ha_options["influx_port"], ha_options["influx_user"], ha_options["influx_password"], ha_options["influx_db"])
-    i.connect()
-    try:
-        test_query = f"""SELECT max("value") AS "mean_value" FROM "homeassistant"."autogen"."kWh" WHERE time > '{date_from.strftime('%Y-%m-%dT%H:%M:%SZ')}' AND time < '{date_to.strftime('%Y-%m-%dT%H:%M:%SZ')}' AND "entity_id"='today_s_pv_generation' GROUP BY time(1d) FILL(0)"""
-        test_result = i.query_data(test_query)
-        solar = list(pd.DataFrame(test_result.raw["series"][0]["values"], columns=["time", "mean_value"])["mean_value"])
-    except Exception as e:
-        current_app.logger.error(f"Test query failed: {e}")
+    solar = list(pd.DataFrame(get_influx_data(date_from, date_to).raw["series"][0]["values"], columns=["time", "mean_value"])["mean_value"])
+
     
     model = ModelJSON.query.get(model_id)
     if not model:

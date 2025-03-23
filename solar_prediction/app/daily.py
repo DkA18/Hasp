@@ -9,22 +9,14 @@ from model.activations.activation import Sigmoid, Tanh, ReLU, LReLU, NormalizedT
 from model.losses import *
 import numpy as np
 from flask import current_app, g
-from influx import InfluxDBConnector
+from influx import get_influx_data
 
 import os
 
 
 def train():
-    with open("/data/options.json") as f:
-        ha_options= json.load(f)
-    i = InfluxDBConnector(ha_options["influx_host"], ha_options["influx_port"], ha_options["influx_user"], ha_options["influx_password"], ha_options["influx_db"])
-    i.connect()
-    try:
-        test_query = """SELECT max("value") AS "mean_value" FROM "homeassistant"."autogen"."kWh" WHERE "entity_id"='today_s_pv_generation' GROUP BY time(1d) FILL(0)"""
-        test_result = i.query_data(test_query)
-        solar = pd.DataFrame(test_result.raw["series"][0]["values"], columns=["time", "mean_value"])
-    except Exception as e:
-        current_app.logger.error(f"Test query failed: {e}")
+
+    solar = pd.DataFrame(get_influx_data().raw["series"][0]["values"], columns=["time", "mean_value"])
     solar['time'] = pd.to_datetime(solar['time'], yearfirst=True, utc=True)
 
 
