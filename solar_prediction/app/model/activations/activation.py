@@ -20,6 +20,16 @@ class Activation(Layer):
 
     def backward(self, output_gradient, learning_rate):
         return np.multiply(output_gradient, self.activation_prime(self.input))
+    
+class Linear(Activation):
+    def __init__(self):
+        def linear(x):
+            return x
+
+        def linear_prime(x):
+            return np.ones_like(x)
+
+        super().__init__(linear, linear_prime)
 
 class Sigmoid(Activation):
     def __init__(self):

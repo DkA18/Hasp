@@ -22,5 +22,6 @@ def get_influx_data(date_from: datetime.datetime = None, date_to: datetime.datet
         client.close()
     except Exception as e:
         current_app.logger.error(f"Failed to connect to InfluxDB: {e}")
-        raise
+        return None
+        
     return result

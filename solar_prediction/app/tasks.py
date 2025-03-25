@@ -15,7 +15,7 @@ def train_model(name: str, type: int):
 def cache_daily_predictions(predictions: dict, model_id: int):
     for date, value in predictions.items():
         date=datetime.datetime.strptime(date, "%Y-%m-%d")
-        db_prediction = PredictionValues.query.filter(db.func.date(PredictionValues.date) == date.date(), PredictionValues.model_id == model_id).first()
+        db_prediction = PredictionValues.query.filter(db.func.date(PredictionValues.date) == date.date() , PredictionValues.model_id == model_id).first()
         if db_prediction:
             db_prediction.value = value
         else:

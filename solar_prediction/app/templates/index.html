@@ -65,6 +65,7 @@
     function changeDailyModel(modelId, modelName) {
       const dateRange = document.getElementById('dateRangePicker').value;
       let modelBtn = document.getElementById('daily-model-dropdown');
+      modelBtn.dataset.modelId = modelId;
 
 
       fetch("{{ url_for('api.index_daily_change_date') }}", {

@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from network import NeuralNetwork
 from model.layers.dense import Dense, AdamDense
-from model.activations.activation import Sigmoid, Tanh, ReLU, LReLU, NormalizedTanh, Softplus, Swish
+from model.activations.activation import *
 from model.losses import *
 import numpy as np
 from flask import current_app, g
@@ -13,10 +13,16 @@ from influx import get_influx_data
 
 import os
 
+def min_max_scale(column):
+    return column / 10000
 
 def train():
-
-    solar = pd.DataFrame(get_influx_data().raw["series"][0]["values"], columns=["time", "mean_value"])
+    try:
+        solar = pd.DataFrame(get_influx_data().raw["series"][0]["values"], columns=["time", "mean_value"])
+    except:
+        solar = pd.read_csv(f'./data_daily.csv') 
+        solar["mean_value"] = solar["mean_value"] / 100
+        solar = solar.dropna()
     solar['time'] = pd.to_datetime(solar['time'], yearfirst=True, utc=True)
 
 
@@ -36,18 +42,22 @@ def train():
     solar["year"] = solar["time"].dt.year
     solar = solar.drop(["time"], axis=1)
     data = pd.merge(pred, solar, on=["day", "month", "year"], how="inner")
-    data = data.drop(["year", "day"], axis=1)
-    data = data/10000
-    data["month"] = (data['month'] * 10000).apply(lambda x: abs(1 - abs(x - 6) / 5))
+    data = data.drop(["year", "day", "month"], axis=1)
+    columns_to_scale = data.columns.drop(["mean_value"])  # Exclude 'mean_value' from scaling
+    data[columns_to_scale] = data[columns_to_scale].apply(min_max_scale)
+    # data["month"] = (data['month']).apply(lambda x: abs(1 - abs(x - 6) / 5))
+
+    
     data = data.sample(frac=1)
-    data['mean_value'] = data['mean_value'].fillna(0)
-    data=  data.dropna()
+
+    print(data.head(), flush=True)
     y = data["mean_value"]
     X = data.drop(["mean_value"], axis=1)
     X = X.to_numpy()
     X =np.reshape(X, (X.shape[0],X.shape[1], 1))
     y = np.reshape(y.to_numpy(), (y.shape[0], 1))
-    network = [Dense(17,32), Softplus(), AdamDense(32, 64),  NormalizedTanh(),  AdamDense(64, 128),  Tanh(),  AdamDense(128, 1), Softplus()]
+    # network = [Dense(17,32), Softplus(), AdamDense(32, 64),  NormalizedTanh(),  AdamDense(64, 128),  Tanh(),  AdamDense(128, 1), Softplus()]
+    network = [AdamDense(16,16), Softplus(), AdamDense(16, 8),  Tanh(),  AdamDense(8, 4),  Tanh(),  AdamDense(4, 1), Softplus()]
 
     n = NeuralNetwork(network)
     # print(X, flush=True)
@@ -68,13 +78,13 @@ def predict(network, from_time, to_time):
     pred["year"] = pred["date"].dt.year
     pred = pred.drop(["date"], axis=1)
 
-    pred = pred.drop(["year", "day"], axis=1)
-    pred = pred/10000
-    pred["month"] = (pred['month'] * 10000).apply(lambda x: abs(1 - abs(x - 6) / 5))
+    pred = pred.drop(["year", "day", "month"], axis=1)
+    pred= pred.apply(min_max_scale)
+    # pred["month"] = (pred['month']).apply(lambda x: abs(1 - abs(x - 6) / 5))
+    
     X = pred.to_numpy()
     X = np.expand_dims(X, axis=-1)
-    # print(X, flush=True)
     result = []
     for x in X:
-        result.append(network.predict(x).item()* 10000)
+        result.append(network.predict(x).item() * 100)
     return result

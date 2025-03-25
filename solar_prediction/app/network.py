@@ -7,7 +7,7 @@ from model.losses import *
 import json
 from copy import deepcopy
 from models import ModelJSON, db
-
+from numpy import nan_to_num
 
 class NeuralNetwork:
     def __init__(self, network: list = []):
@@ -21,7 +21,7 @@ class NeuralNetwork:
         for layer in self.network:
             output = layer.forward(output)
             
-        return output
+        return nan_to_num(output)
     
     def load(self, json_record):
         self.network = []

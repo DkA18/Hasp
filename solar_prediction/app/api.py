@@ -15,6 +15,7 @@ api = Blueprint('api', __name__)
 def index_daily_change_date():
     date_range = request.json.get("date_range")
     model_id = request.json.get("model_id")
+    cache = request.json.get("cache")
     if not date_range or not model_id:
         return abort(400)
     date_range = date_range.split(" to ") if "to" in date_range else [date_range, date_range]
@@ -24,7 +25,10 @@ def index_daily_change_date():
     except ValueError:
         return abort(400)
     
-    solar = list(pd.DataFrame(get_influx_data(date_from, date_to).raw["series"][0]["values"], columns=["time", "mean_value"])["mean_value"])
+    try:
+        solar = list(pd.DataFrame(get_influx_data(date_from, date_to).raw["series"][0]["values"], columns=["time", "mean_value"])["mean_value"])
+    except:
+        solar = []
 
     
     model = ModelJSON.query.get(model_id)
@@ -35,7 +39,7 @@ def index_daily_change_date():
     network.load(model.data)
     
     existing_predictions = PredictionValues.query.filter((db.func.date(PredictionValues.date) >= date_from.date()) & (db.func.date(PredictionValues.date) <= date_to.date())).all()
-    if len(existing_predictions) == (date_to - date_from).days + 1:
+    if len(existing_predictions) == (date_to - date_from).days + 1 and not cache:
         predictions = [pred.value for pred in existing_predictions]
         current_app.logger.info("Using cached predictions")
     else:
