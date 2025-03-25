@@ -38,7 +38,7 @@ def create_app():
     db.init_app(app)
     with app.app_context():
         db.create_all()
-        db.drop_all()
+
     migrate = Migrate(app, db)  # Ensure Migrate is initialized with app and db
         
     def custom_url_for(endpoint, **values):
