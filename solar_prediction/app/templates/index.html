@@ -207,7 +207,7 @@
         datasets: [
           {
             type: 'bar',
-            label: 'Predict Power (W)',
+            label: 'Predict Power (kWh)',
             data: JSON.parse("{{result}}"),
             backgroundColor: dailyGradient2,
             borderColor: '#B91C1C',
@@ -215,8 +215,8 @@
           },
           {
             type: 'line',
-            label: 'Actual Power (W)',
-            data: [65, 59, 80, 81, 56, 55, 40],
+            label: 'Actual Power (kWh)',
+            data: JSON.parse("{{actual}}"),
             fill: true,
             backgroundColor: dailyGradient,
             borderColor: '#3B82F6',

@@ -2,11 +2,13 @@ from copy import copy, deepcopy
 from datetime import datetime, timedelta
 import datetime as dt
 from flask import Blueprint, abort, redirect, render_template, request, url_for, jsonify, current_app, g
+import pandas as pd
 from models import *
 from daily import predict
 from network import NeuralNetwork
 from tasks import train_model, cache_daily_predictions
 from celery.result import AsyncResult
+from influx import get_influx_data
 
 views = Blueprint("views", __name__)
 
@@ -45,8 +47,11 @@ def index():
     
     
     labels = [(datetime.today() + timedelta(days=i)).strftime("%B %d, %Y") for i in range(5)]
-    
-    return render_template("index.html", exists=True, result=predictions, labels=labels, models=models, selected_model=model)
+    try:
+        actual = list(pd.DataFrame(get_influx_data(date_from, date_to).raw["series"][0]["values"], columns=["time", "mean_value"])["mean_value"])
+    except:
+        actual = []
+    return render_template("index.html", exists=True, result=predictions, labels=labels, models=models, selected_model=model, actual=actual)
 
 @views.route('/models')
 def models():
