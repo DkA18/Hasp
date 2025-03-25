@@ -21,8 +21,8 @@ def train():
         solar = pd.DataFrame(get_influx_data().raw["series"][0]["values"], columns=["time", "mean_value"])
     except:
         solar = pd.read_csv(f'./data_daily.csv') 
-        solar["mean_value"] = solar["mean_value"] / 100
-        solar = solar.dropna()
+    solar["mean_value"] = solar["mean_value"] / 100
+    solar = solar.dropna()
     solar['time'] = pd.to_datetime(solar['time'], yearfirst=True, utc=True)
 
 
@@ -49,18 +49,17 @@ def train():
     
     data = data.sample(frac=1)
 
-    print(data.head(), flush=True)
     y = data["mean_value"]
     X = data.drop(["mean_value"], axis=1)
     X = X.to_numpy()
     X =np.reshape(X, (X.shape[0],X.shape[1], 1))
     y = np.reshape(y.to_numpy(), (y.shape[0], 1))
     # network = [Dense(17,32), Softplus(), AdamDense(32, 64),  NormalizedTanh(),  AdamDense(64, 128),  Tanh(),  AdamDense(128, 1), Softplus()]
-    network = [AdamDense(44,32), Softplus(), AdamDense(32, 16),  Tanh(),  AdamDense(16, 8), Tanh(),  AdamDense(8, 4), Tanh(),  AdamDense(4, 1), Softplus()]
+    network = [AdamDense(44,32), Softplus(), AdamDense(32, 16),  Tanh(),  AdamDense(16, 8), NormalizedTanh(),  AdamDense(8, 4), Tanh(),  AdamDense(4, 1), Softplus()]
 
     n = NeuralNetwork(network)
     # print(X, flush=True)
-    trained_n = n.train(mse, mse_prime, X, y, epochs=2000, learning_rate=0.0005, verbose=False)
+    trained_n = n.train(mse, mse_prime, X, y, epochs=2000, learning_rate=0.00005, verbose=False)
     
     return trained_n, json.dumps({"error": n.error_rate, "real_error": n.real_error})
 
