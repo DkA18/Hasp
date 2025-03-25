@@ -54,7 +54,7 @@
 
     <!-- Button to Update Chart Data via HTMX -->
     <div class="flex justify-center mt-6">
-      <button hx-get="/update-chart-data" hx-target="#salesChartContainer" hx-swap="innerHTML" class="btn btn-primary">
+      <button class="btn btn-primary" onclick="changeDailyModel(document.getElementById('daily-model-dropdown').dataset.modelId, document.getElementById('daily-model-dropdown').textContent)">
         Update Chart Data
       </button>
     </div>
@@ -62,7 +62,7 @@
 
   <script>
     // Function to change the daily model and update chart data
-    function changeDailyModel(modelId, modelName) {
+    function changeDailyModel(modelId, modelName, cache=false) {
       const dateRange = document.getElementById('dateRangePicker').value;
       let modelBtn = document.getElementById('daily-model-dropdown');
       modelBtn.dataset.modelId = modelId;
@@ -73,7 +73,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ model_id: modelId, date_range: dateRange })
+        body: JSON.stringify({ model_id: modelId, date_range: dateRange, cache: cache ? true : null })
       })
         .then(response => response.json())
         .then(data => {

@@ -55,8 +55,7 @@ def train():
     X =np.reshape(X, (X.shape[0],X.shape[1], 1))
     y = np.reshape(y.to_numpy(), (y.shape[0], 1))
     # network = [Dense(17,32), Softplus(), AdamDense(32, 64),  NormalizedTanh(),  AdamDense(64, 128),  Tanh(),  AdamDense(128, 1), Softplus()]
-    network = [AdamDense(44,32), Softplus(), AdamDense(32, 16),  Tanh(),  AdamDense(16, 8), NormalizedTanh(),  AdamDense(8, 4), Tanh(),  AdamDense(4, 1), Softplus()]
-
+    network = [AdamDense(44,64), Softplus(), AdamDense(64, 128),  Tanh(),  AdamDense(128, 32), NormalizedTanh(),  AdamDense(32, 16), Tanh(),  AdamDense(16, 1), Softplus()]
     n = NeuralNetwork(network)
     # print(X, flush=True)
     trained_n = n.train(mse, mse_prime, X, y, epochs=2000, learning_rate=0.00005, verbose=False)
