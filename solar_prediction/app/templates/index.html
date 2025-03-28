@@ -28,7 +28,7 @@
             <li><a>Item 2</a></li>
           </ul>
         </div>
-        <!-- <input type="text" id="date-range" class="input input-ghost w-full max-w-xs"> -->
+        <input type="text" id="dateRangePickerHourly" class="input w-full max-w-xs">
         <div class="bg-base-200 rounded-lg shadow p-3 w-auto h-96">
           <canvas id="hourlyChart" class="h-full"></canvas>
         </div>
@@ -45,7 +45,7 @@
             {%endfor%}
           </ul>
         </div>
-        <input type="text" id="dateRangePicker" class="input w-full max-w-xs">
+        <input type="text" id="dateRangePickerDaily" class="input w-full max-w-xs">
         <div class="bg-base-200 rounded-lg shadow p-3 w-auto h-96">
           <canvas id="dailyChart" class="h-full"></canvas>
         </div>
@@ -87,7 +87,7 @@
     }
 
     // Initialize Flatpickr for date range selection
-    let dateRangePicker = flatpickr("#dateRangePicker", {
+    let dateRangePickerDaily = flatpickr("#dateRangePickerDaily", {
       mode: "range",
       dateFormat: "Y-m-d",
       minDate: new Date().fp_incr(-30), // -1 month from today
@@ -98,8 +98,25 @@
     });
 
     // Event listener for date range change
-    dateRangePicker.config.onChange.push(function (selectedDates, dateStr, instance) {
+    dateRangePickerDaily.config.onChange.push(function (selectedDates, dateStr, instance) {
       changeDailyModel(document.getElementById('daily-model-dropdown').dataset.modelId);
+    });
+
+    let dateRangePickerHourly = flatpickr("#dateRangePickerHourly", {
+      mode: "range",
+      dateFormat: "Y-m-d:H",
+      defaultDate: [new Date(), new Date().fp_incr(1)], // today + 4 days
+      disableMobile: true, // disable mobile optimizations
+      cache: false, // disable caching
+      enableTime: true, // Enable time selection
+      time_24hr: true, // Use 24-hour format
+      minDate: new Date().fp_incr(-10), // -10 days from today
+      maxDate: new Date().fp_incr(3),  // +3 days from today
+    });
+
+    // Event listener for date range change
+    dateRangePickerHourly.config.onChange.push(function (selectedDates, dateStr, instance) {
+      changeHourlyModel(document.getElementById('hourly-model-dropdown').dataset.modelId);
     });
 
     // Initialize Chart.js for hourly chart
@@ -260,7 +277,7 @@
             display: true,
             title: {
               display: true,
-              text: 'Power (W)',
+              text: 'Power (kWh)',
               font: {
                 size: 14,
                 weight: 'bold'
