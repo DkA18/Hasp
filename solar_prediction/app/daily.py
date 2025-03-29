@@ -21,6 +21,7 @@ def train():
         solar = pd.DataFrame(get_influx_data().raw["series"][0]["values"], columns=["time", "mean_value"])
     except:
         solar = pd.read_csv(f'./data_daily.csv') 
+    print(solar.head(), flush=True)
     solar["mean_value"] = solar["mean_value"] / 100
     solar = solar.dropna()
     solar['time'] = pd.to_datetime(solar['time'], yearfirst=True, utc=True)
