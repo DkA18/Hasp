@@ -1,6 +1,6 @@
 {
   "name": "Solar Prediction",
-  "version": "0.1.36",
+  "version": "0.1.37",
   "slug": "solar_prediction",
   "description": "Home Assistant add-on that predicts solar energy production.",
   "arch": [

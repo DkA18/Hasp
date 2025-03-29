@@ -47,6 +47,7 @@ def train():
     # data["month"] = (data['month']).apply(lambda x: abs(1 - abs(x - 6) / 5))
 
     data = data.sample(frac=1)
+    current_app.logger.info(data.head())
 
     y = data["mean_value"]
     X = data.drop(["mean_value"], axis=1)
