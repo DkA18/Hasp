@@ -7,6 +7,7 @@ from flask import current_app
 
 def get_influx_data(date_from: datetime.datetime = None, date_to: datetime.datetime = None):
     try:
+        raise Exception("test")
         with open("/data/options.json") as f:
             ha_options= json.load(f)
     
