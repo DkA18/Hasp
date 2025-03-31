@@ -69,4 +69,18 @@ def create_model():
     
     return redirect(url_for("views.index"))
 
+@api.route("/delete_model", methods=["POST"])
+def delete_model():
+    model_id = request.form.get("model_id")
+    
+    if  not model_id:
+        return abort(400, description="Missing model id")
+    
+    model = ModelJSON.query.get(model_id)
+    
+    db.session.delete(model)
+    db.session.commit()
+
+    
+    return "", 200
 

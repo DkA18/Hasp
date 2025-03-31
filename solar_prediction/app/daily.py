@@ -19,15 +19,15 @@ def min_max_scale(column):
 def train():
     try:
         solar = pd.DataFrame(get_influx_data().raw["series"][0]["values"], columns=["time", "mean_value"])
+        print("using influx", flush=True)
     except:
-        solar = pd.read_csv(f'./data_daily.csv') 
+        solar = pd.read_csv('./data_daily.csv') 
+        print("using csv", flush=True)
     solar["mean_value"] = solar["mean_value"] / 100
     solar = solar.dropna()
     solar['time'] = pd.to_datetime(solar['time'], yearfirst=True, utc=True)
-    print(solar.head(), flush=True)
 
-
-    url = f"https://archive-api.open-meteo.com/v1/archive?latitude=49.7751150&longitude=13.3604831&start_date={solar['time'].min().strftime('%Y-%m-%d')}&end_date={solar['time'].max().strftime('%Y-%m-%d')}&daily=weather_code,temperature_2m_mean,temperature_2m_max,temperature_2m_min,apparent_temperature_mean,apparent_temperature_max,apparent_temperature_min,daylight_duration,sunshine_duration,precipitation_sum,rain_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum,et0_fao_evapotranspiration,cloud_cover_mean,cloud_cover_max,cloud_cover_min,dew_point_2m_mean,dew_point_2m_max,dew_point_2m_min,et0_fao_evapotranspiration_sum,relative_humidity_2m_mean,relative_humidity_2m_max,relative_humidity_2m_min,snowfall_water_equivalent_sum,pressure_msl_mean,pressure_msl_max,pressure_msl_min,surface_pressure_mean,surface_pressure_max,surface_pressure_min,winddirection_10m_dominant,wind_gusts_10m_mean,wind_gusts_10m_min,wind_speed_10m_mean,wind_speed_10m_min,wet_bulb_temperature_2m_mean,wet_bulb_temperature_2m_max,wet_bulb_temperature_2m_min,vapour_pressure_deficit_max&timezone=GMT"
+    url = f"https://archive-api.open-meteo.com/v1/archive?latitude=49.7751150&longitude=13.3604831&start_date={solar['time'].min().strftime('%Y-%m-%d')}&end_date={solar['time'].max().strftime('%Y-%m-%d')}&daily=weather_code,temperature_2m_mean,temperature_2m_max,temperature_2m_min,apparent_temperature_mean,apparent_temperature_max,apparent_temperature_min,daylight_duration,sunshine_duration,precipitation_sum,rain_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum,et0_fao_evapotranspiration,cloud_cover_mean,cloud_cover_max,cloud_cover_min,dew_point_2m_mean,dew_point_2m_max,dew_point_2m_min,et0_fao_evapotranspiration_sum,relative_humidity_2m_mean,relative_humidity_2m_max,relative_humidity_2m_min,snowfall_water_equivalent_sum,wind_gusts_10m_mean,wind_gusts_10m_min,wind_speed_10m_mean,wind_speed_10m_min,wet_bulb_temperature_2m_mean,wet_bulb_temperature_2m_max,wet_bulb_temperature_2m_min,vapour_pressure_deficit_max&timezone=GMT"
 
 
     pred = pd.DataFrame(requests.get(url).json()["daily"])
@@ -43,28 +43,24 @@ def train():
     solar = solar.drop(["time"], axis=1)
     data = pd.merge(pred, solar, on=["day", "month", "year"], how="inner")
     data = data.drop(["year", "day", "month"], axis=1)
-    columns_to_scale = data.columns.drop(["mean_value"])  # Exclude 'mean_value' from scaling
+    columns_to_scale = data.columns.drop(["mean_value"])  
     data[columns_to_scale] = data[columns_to_scale].apply(min_max_scale)
-    # data["month"] = (data['month']).apply(lambda x: abs(1 - abs(x - 6) / 5))
-
+    data = data.dropna()
     data = data.sample(frac=1)
-    current_app.logger.info(data.head())
-
     y = data["mean_value"]
     X = data.drop(["mean_value"], axis=1)
     X = X.to_numpy()
     X =np.reshape(X, (X.shape[0],X.shape[1], 1))
     y = np.reshape(y.to_numpy(), (y.shape[0], 1))
-    # network = [Dense(17,32), Softplus(), AdamDense(32, 64),  NormalizedTanh(),  AdamDense(64, 128),  Tanh(),  AdamDense(128, 1), Softplus()]
-    network = [AdamDense(44,64), Softplus(), AdamDense(64, 128),  Tanh(),  AdamDense(128, 32), NormalizedTanh(),  AdamDense(32, 16), Tanh(),  AdamDense(16, 1), Softplus()]
+    network = [AdamDense(37,64), Softplus(), AdamDense(64, 128),  Tanh(),  AdamDense(128, 32), NormalizedTanh(),  AdamDense(32, 16), Tanh(),  AdamDense(16, 1), Softplus()]
     n = NeuralNetwork(network)
     # print(X, flush=True)
-    trained_n = n.train(mse, mse_prime, X, y, epochs=2000, learning_rate=0.00005, verbose=False)
+    trained_n = n.train(mse, mse_prime, X, y, epochs=2000,  learning_rate=0.00001, verbose=False)
     
     return trained_n, json.dumps({"error": n.error_rate, "real_error": n.real_error})
 
 def predict(network, from_time, to_time):
-    url = f"https://api.open-meteo.com/v1/forecast?latitude=49.7751150&longitude=13.3604831&start_date={from_time.strftime('%Y-%m-%d')}&end_date={to_time.strftime('%Y-%m-%d')}&daily=weather_code,temperature_2m_mean,temperature_2m_max,temperature_2m_min,apparent_temperature_mean,apparent_temperature_max,apparent_temperature_min,daylight_duration,sunshine_duration,precipitation_sum,rain_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum,et0_fao_evapotranspiration,cloud_cover_mean,cloud_cover_max,cloud_cover_min,dew_point_2m_mean,dew_point_2m_max,dew_point_2m_min,et0_fao_evapotranspiration_sum,relative_humidity_2m_mean,relative_humidity_2m_max,relative_humidity_2m_min,snowfall_water_equivalent_sum,pressure_msl_mean,pressure_msl_max,pressure_msl_min,surface_pressure_mean,surface_pressure_max,surface_pressure_min,winddirection_10m_dominant,wind_gusts_10m_mean,wind_gusts_10m_min,wind_speed_10m_mean,wind_speed_10m_min,wet_bulb_temperature_2m_mean,wet_bulb_temperature_2m_max,wet_bulb_temperature_2m_min,vapour_pressure_deficit_max&timezone=GMT"
+    url = f"https://api.open-meteo.com/v1/forecast?latitude=49.7751150&longitude=13.3604831&start_date={from_time.strftime('%Y-%m-%d')}&end_date={to_time.strftime('%Y-%m-%d')}&daily=weather_code,temperature_2m_mean,temperature_2m_max,temperature_2m_min,apparent_temperature_mean,apparent_temperature_max,apparent_temperature_min,daylight_duration,sunshine_duration,precipitation_sum,rain_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum,et0_fao_evapotranspiration,cloud_cover_mean,cloud_cover_max,cloud_cover_min,dew_point_2m_mean,dew_point_2m_max,dew_point_2m_min,et0_fao_evapotranspiration_sum,relative_humidity_2m_mean,relative_humidity_2m_max,relative_humidity_2m_min,snowfall_water_equivalent_sum,wind_gusts_10m_mean,wind_gusts_10m_min,wind_speed_10m_mean,wind_speed_10m_min,wet_bulb_temperature_2m_mean,wet_bulb_temperature_2m_max,wet_bulb_temperature_2m_min,vapour_pressure_deficit_max&timezone=GMT"
 
 
     pred = pd.DataFrame(requests.get(url).json()["daily"])

@@ -8,6 +8,7 @@ services:
     volumes:
       - ./app:/opt/app
       - ./instance:/data/instance
+      - ./options.json:/data/options.json
     # entrypoint: ./run.sh
     restart: always
     working_dir: /opt/app

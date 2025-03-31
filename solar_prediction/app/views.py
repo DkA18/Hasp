@@ -18,7 +18,6 @@ def favicon():
 
 @views.route('/')
 def index():
-    
     models = ModelJSON.query.all()
     if not models:
         return render_template("index.html", exists=False)
@@ -48,7 +47,9 @@ def index():
     
     labels = [(datetime.today() + timedelta(days=i)).strftime("%B %d, %Y") for i in range(5)]
     try:
-        actual = list(pd.DataFrame(get_influx_data(date_from, date_to).raw["series"][0]["values"], columns=["time", "mean_value"])["mean_value"])
+        influx_data = pd.DataFrame(get_influx_data(date_from, date_to).raw["series"][0]["values"], columns=["time", "mean_value"])
+        influx_data = influx_data.dropna()
+        actual = list(influx_data["mean_value"])
     except:
         actual = []
     return render_template("index.html", exists=True, result=predictions, labels=labels, models=models, selected_model=model, actual=actual)
@@ -56,7 +57,6 @@ def index():
 @views.route('/models')
 def models():
     tasks = []
-    
 
     return render_template("models.html", models=ModelJSON.query.all(), tasks=tasks)
     

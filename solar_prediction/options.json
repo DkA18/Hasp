@@ -1,0 +1,7 @@
+{
+    "influx_host": "",
+    "influx_port": "8086",
+    "influx_db": "homeassistant",
+    "influx_user": "homeassist",
+    "influx_password": "homeassist"
+}

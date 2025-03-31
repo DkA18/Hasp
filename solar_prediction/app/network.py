@@ -21,7 +21,7 @@ class NeuralNetwork:
         for layer in self.network:
             output = layer.forward(output)
             
-        return nan_to_num(output)
+        return output
     
     def load(self, json_record):
         self.network = []
@@ -73,8 +73,8 @@ class NeuralNetwork:
                 valid_error = 0
                 for x, y in zip(x_test, y_test):
                     p = self.predict(x)
-                    pred = round(p.item() * 10000)
-                    actual = round(y.item()  * 10000)
+                    pred = round(p.item() *10000)
+                    actual = round(y.item()*10000)
                     valid_error += loss(y, p)
                     try:
                         percent  = round((pred/actual)*100)  
@@ -82,7 +82,7 @@ class NeuralNetwork:
                         percent  = 0 
                     current.append([pred, actual, percent])
                     if verbose:
-                        print(f"Unit Validation epoch, actual={actual}, prediction={pred}, miss={np.abs(pred-actual).item()}, percentage={percent}%")
+                        print(f"Unit Validation epoch, actual={actual}, prediction={pred}, miss={np.abs(pred-actual).item()}, percentage={percent}%, y={y.item()}")
                 tested += 1
                 print(f"Complete Validation on {e + 1}/{epochs} epoch, actual={np.mean([actual[1] for actual in current]).round()}, prediction={np.mean([pred[0] for pred in current]).round()}, miss={np.mean([np.abs(l[0]-l[1]).item() for l in current]).round()}, percentage={np.mean([percent[2] for percent in current]).round()}%, valid_error={valid_error}, error={error}", flush=True)
                 self.real_error.append(valid_error)
@@ -91,7 +91,7 @@ class NeuralNetwork:
                     if valid_error < self.real_error[-2]:
                         self.backup = [deepcopy(e) for e in self.network]
                 if len(self.real_error) > 5:
-                    if self.real_error[-5] < np.mean(self.real_error[-4:]):
+                    if self.real_error[-5] < np.mean(self.real_error[-4:]) and self.real_error[-5] > self.real_error[-1]:
                         self.network = self.backup
                         break   
         return self.save()
