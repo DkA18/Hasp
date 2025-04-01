@@ -42,9 +42,10 @@ def train():
     solar["year"] = solar["time"].dt.year
     solar = solar.drop(["time"], axis=1)
     data = pd.merge(pred, solar, on=["day", "month", "year"], how="inner")
-    data = data.drop(["year", "day", "month"], axis=1)
-    columns_to_scale = data.columns.drop(["mean_value"])  
+    data = data.drop(["year", "day"], axis=1)
+    columns_to_scale = data.columns.drop(["mean_value", "month"])  
     data[columns_to_scale] = data[columns_to_scale].apply(min_max_scale)
+    data["month"] = np.cos((np.pi * data["month"]) / 6)
     data = data.dropna()
     data = data.sample(frac=1)
     y = data["mean_value"]
@@ -52,7 +53,7 @@ def train():
     X = X.to_numpy()
     X =np.reshape(X, (X.shape[0],X.shape[1], 1))
     y = np.reshape(y.to_numpy(), (y.shape[0], 1))
-    network = [AdamDense(37,64), Softplus(), AdamDense(64, 128),  Tanh(),  AdamDense(128, 32), NormalizedTanh(),  AdamDense(32, 16), Tanh(),  AdamDense(16, 1), Softplus()]
+    network = [AdamDense(38,64), Softplus(), AdamDense(64, 128),  Tanh(),  AdamDense(128, 32), NormalizedTanh(),  AdamDense(32, 16), Tanh(),  AdamDense(16, 1), Softplus()]
     n = NeuralNetwork(network)
     # print(X, flush=True)
     trained_n = n.train(mse, mse_prime, X, y, epochs=2000,  learning_rate=0.00001, verbose=False)

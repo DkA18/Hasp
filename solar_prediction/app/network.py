@@ -91,7 +91,7 @@ class NeuralNetwork:
                     if valid_error < self.real_error[-2]:
                         self.backup = [deepcopy(e) for e in self.network]
                 if len(self.real_error) > 5:
-                    if self.real_error[-5] < np.mean(self.real_error[-4:]) and self.real_error[-5] > self.real_error[-1]:
+                    if self.real_error[-5] < np.mean(self.real_error[-4:]) and self.real_error[-5] < self.real_error[-1]:
                         self.network = self.backup
                         break   
         return self.save()
