@@ -7,7 +7,7 @@ from model.losses import *
 import json
 from copy import deepcopy
 from models import ModelJSON, db
-from numpy import nan_to_num
+from numpy import float128, nan_to_num
 
 class NeuralNetwork:
     def __init__(self, network: list = []):
@@ -33,8 +33,8 @@ class NeuralNetwork:
             
             try:
                 l = globals()[list(dict(layer).keys())[0]](*(list(dict(layer).values())[0]["shape"]))
-                l.weights = np.asarray(list(dict(layer).values())[0]["weights"])
-                l.bias = np.asarray(list(dict(layer).values())[0]["bias"])
+                l.weights = np.asarray([np.asarray(json.loads(item), dtype=np.longdouble) for item in list(dict(layer).values())[0]["weights"]])
+                l.bias = np.asarray([np.asarray(json.loads(item), dtype=np.longdouble) for item in list(dict(layer).values())[0]["bias"]])
             except (KeyError, TypeError):
                 l = globals()[list(dict(layer).keys())[0]]()
             self.network.append(l) 
@@ -47,6 +47,8 @@ class NeuralNetwork:
 
     def train(self, loss, loss_prime, x_train, y_train, test_split=0.1, epochs = 1000, learning_rate = 0.01, verbose = True):
         split_idx = int(len(x_train) * (1 - test_split))
+        x_train = np.array(x_train, dtype=np.longdouble)
+        y_train = np.array(y_train, dtype=np.longdouble)
         x_test = x_train[split_idx:]
         y_test = y_train[split_idx:]
         x_train = x_train[:split_idx]

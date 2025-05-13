@@ -41,7 +41,7 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-    migrate = Migrate(app, db)  # Ensure Migrate is initialized with app and db
+    migrate = Migrate(app, db) 
         
     def custom_url_for(endpoint, **values):
         ingress_path = request.headers.get("X-Ingress-Path", "")

@@ -14,7 +14,7 @@ from influx import get_influx_data
 import os
 
 def min_max_scale(column):
-    return column / 10000
+    return column /1000
 
 def train():
     try:
@@ -53,12 +53,12 @@ def train():
     X = X.to_numpy()
     X =np.reshape(X, (X.shape[0],X.shape[1], 1))
     y = np.reshape(y.to_numpy(), (y.shape[0], 1))
-    network = [AdamDense(38,64), Softplus(), AdamDense(64, 128),  Tanh(),  AdamDense(128, 32), NormalizedTanh(),  AdamDense(32, 16), Tanh(),  AdamDense(16, 1), Softplus()]
+    network = [Dense(38,64), Tanh(), Dense(64, 32),  Tanh(),  Dense(32, 16), Softplus(),  Dense(16, 4), Tanh(),  Dense(4, 1), Tanh()]
     n = NeuralNetwork(network)
     # print(X, flush=True)
-    trained_n = n.train(mse, mse_prime, X, y, epochs=2000,  learning_rate=0.00001, verbose=False)
+    trained_n = n.train(huber_loss, huber_loss_prime, X, y, epochs=2000,  learning_rate=0.0001, verbose=False)
     
-    return trained_n, json.dumps({"error": n.error_rate, "real_error": n.real_error})
+    return trained_n, json.dumps({"error": list(map(float, n.error_rate)), "real_error": list(map(float, n.real_error))})
 
 def predict(network, from_time, to_time):
     url = f"https://api.open-meteo.com/v1/forecast?latitude=49.7751150&longitude=13.3604831&start_date={from_time.strftime('%Y-%m-%d')}&end_date={to_time.strftime('%Y-%m-%d')}&daily=weather_code,temperature_2m_mean,temperature_2m_max,temperature_2m_min,apparent_temperature_mean,apparent_temperature_max,apparent_temperature_min,daylight_duration,sunshine_duration,precipitation_sum,rain_sum,precipitation_hours,snowfall_sum,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,shortwave_radiation_sum,et0_fao_evapotranspiration,cloud_cover_mean,cloud_cover_max,cloud_cover_min,dew_point_2m_mean,dew_point_2m_max,dew_point_2m_min,et0_fao_evapotranspiration_sum,relative_humidity_2m_mean,relative_humidity_2m_max,relative_humidity_2m_min,snowfall_water_equivalent_sum,wind_gusts_10m_mean,wind_gusts_10m_min,wind_speed_10m_mean,wind_speed_10m_min,wet_bulb_temperature_2m_mean,wet_bulb_temperature_2m_max,wet_bulb_temperature_2m_min,vapour_pressure_deficit_max&timezone=GMT"
@@ -72,13 +72,14 @@ def predict(network, from_time, to_time):
     pred["year"] = pred["date"].dt.year
     pred = pred.drop(["date"], axis=1)
 
-    pred = pred.drop(["year", "day", "month"], axis=1)
-    pred= pred.apply(min_max_scale)
+    pred = pred.drop(["year", "day"], axis=1)
+    pred["month"] = np.cos((np.pi * pred["month"]) / 6)
+    columns_to_scale = pred.columns.drop(["month"])  
+    pred[columns_to_scale] = pred[columns_to_scale].apply(min_max_scale)
     # pred["month"] = (pred['month']).apply(lambda x: abs(1 - abs(x - 6) / 5))
-    
-    X = pred.to_numpy()
+    X = pred.to_numpy(dtype=np.longdouble)
     X = np.expand_dims(X, axis=-1)
     result = []
     for x in X:
-        result.append(network.predict(x).item() * 100)
+        result.append(network.predict(x).astype(np.float64).item() * 100)
     return result

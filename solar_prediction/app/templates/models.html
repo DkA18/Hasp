@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% include 'navbar.html' %}
-<div class="fixed inset-0 flex flex-col items-center justify-center bg-base-100">
+<div class="flex flex-col items-center justify-center h-100 mt-40">
     <div class="bg-base-200 shadow-md rounded-lg p-6 mb-6 w-1/2">
         <h2 class="text-2xl font-bold mb-4">Create New Model</h2>
         <form action="{{ url_for('api.create_model') }}" method="post" class="flex w-full justify-between">
@@ -21,11 +21,11 @@
             </div>
         </form>
     </div>
-    <div class="bg-base-100 shadow-md rounded-lg p-6">
+    <div class="bg-base-100 shadow-md rounded-lg p-6 w-100">
         <h2 class="text-2xl font-bold mb-4">Models List</h2>
         <ul class="space-y-2 max-h-30 overflow-y-auto">
             {% for model in models %}
-            <li class="p-4 bg-base-100 rounded-lg shadow-sm flex justify-between items-center">
+            <li class="p-4 bg-base-200 rounded-lg shadow-sm flex justify-between items-center">
                 <div>
                     <h3 class="text-xl font-semibold">{{ model.name }}</h3>
                     <p class="text-gray-600">

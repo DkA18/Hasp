@@ -12,7 +12,7 @@ class Dense(Layer):
         return f"Dense{self.shape}"
         
     def json_dict(self):
-        return {"Dense": {"weights": self.weights.tolist(), "bias": self.bias.tolist(), "shape": self.shape}}
+        return {"Dense": {"weights": [str(item) for item in self.weights.tolist()], "bias": [str(item) for item in self.bias.tolist()], "shape": self.shape}}
 
     def forward(self, input):
        
