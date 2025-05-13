@@ -1,3 +1,6 @@
 solar_prediction/instance/db.sqlite
 solar_prediction/app/dump.rdb
 .conda
+/node_modules
+**/__pycache__/
+**/*.pyc

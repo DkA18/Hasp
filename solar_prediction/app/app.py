@@ -1,5 +1,6 @@
 # app.py
 import os
+import numpy as np
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
 from flask import Flask, json, jsonify, request, render_template, url_for, g
 from flask_sqlalchemy import SQLAlchemy
@@ -15,6 +16,7 @@ celery = None
 
 def create_app():
     global celery
+    np.seterr(over='raise')
     app = Flask(__name__)
     if not os.path.exists("/data/instance"):
         try:

@@ -41,11 +41,18 @@ def index_daily_change_date():
     existing_predictions = PredictionValues.query.filter((db.func.date(PredictionValues.date) >= date_from.date()) & (db.func.date(PredictionValues.date) <= date_to.date())).all()
     if len(existing_predictions) == (date_to - date_from).days + 1 and not cache:
         predictions = [pred.value for pred in existing_predictions]
-        current_app.logger.info("Using cached predictions")
+        current_app.logger.info(f"Using cached predictions for dates {date_from} to {date_to}")
     else:
-        predictions = predict(network, date_from, date_to)
-        cache_daily_predictions.delay(dict(zip([(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d")  for i in range(5)],predictions)),model.id  ) 
-        current_app.logger.info("Using new predictions") 
+        try:
+            predictions = predict(network, date_from, date_to)
+            cache_daily_predictions.delay(
+                dict(zip([(datetime.today() + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(5)], predictions)),
+                model.id
+            )
+            current_app.logger.info(f"Generated new predictions for dates {date_from} to {date_to}")
+        except Exception as e:
+            current_app.logger.error(f"Error generating predictions: {e}")
+            return jsonify({"error": "Failed to generate predictions"}), 500
    
     date_labels = [(date_from + timedelta(days=i)).strftime("%B %d, %Y") for i in range((date_to - date_from).days + 1)]
     response = jsonify({"predictions": predictions, "labels": date_labels, "actual": solar})

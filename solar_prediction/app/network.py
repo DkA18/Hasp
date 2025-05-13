@@ -45,7 +45,7 @@ class NeuralNetwork:
 
         return json.dumps(save_object)
 
-    def train(self, loss, loss_prime, x_train, y_train, test_split=0.3, epochs = 1000, learning_rate = 0.01, verbose = True):
+    def train(self, loss, loss_prime, x_train, y_train, test_split=0.1, epochs = 1000, learning_rate = 0.01, verbose = True):
         split_idx = int(len(x_train) * (1 - test_split))
         x_test = x_train[split_idx:]
         y_test = y_train[split_idx:]
