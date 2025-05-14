@@ -36,7 +36,8 @@
                         {% endif %}
                     </p>
                 </div>
-                <form action="{{ url_for('api.delete_model', model_id=model.id) }}" method="post">
+                <form action="{{ url_for('api.delete_model') }}" method="post">
+                    <input type="text" name="model_id" value="{{ model.id }}" hidden>
                     <button type="submit" class="btn btn-error">Delete</button>
                 </form>
             </li>

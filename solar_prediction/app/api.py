@@ -89,5 +89,5 @@ def delete_model():
     db.session.commit()
 
     
-    return "", 200
+    return redirect(url_for("views.index"))
 

@@ -8,7 +8,7 @@ class PredictionValues(db.Model):
     date = db.Column(db.Date, nullable=False, index=True) 
     value = db.Column(db.Float, nullable=False)
     model_id = db.Column(db.Integer, db.ForeignKey('model_json.id'), nullable=False)
-    model = db.relationship('ModelJSON', backref=db.backref('predictions', lazy=True))
+    model = db.relationship('ModelJSON', backref=db.backref('predictions', lazy=True, cascade="all, delete-orphan"))
 
     def __repr__(self):
         return f"<PredictionValues(date={self.date}, value={self.value})>"
